@@ -1,0 +1,3859 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TravelCRM â€” Travel & Tourism</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              pri: {
+                50: "#E6F5F5",
+                100: "#B3E0E0",
+                200: "#80CCCC",
+                300: "#4DB8B8",
+                400: "#1AA3A3",
+                500: "#0E7E7E",
+                600: "#0A6363",
+                700: "#074949",
+                800: "#043030",
+                900: "#021818",
+              },
+              acc: {
+                50: "#FBF5E6",
+                100: "#F3E0B3",
+                200: "#EBCC80",
+                300: "#E3B74D",
+                400: "#D4A039",
+                500: "#B8872E",
+                600: "#9A6F24",
+                700: "#775A19",
+                800: "#4E3C11",
+                900: "#251E08",
+              },
+              cream: {
+                50: "#FDFCFA",
+                100: "#F8F6F1",
+                200: "#F0EDE4",
+                300: "#E5E1D8",
+                400: "#D4CFC4",
+              },
+            },
+            fontFamily: {
+              display: ["Playfair Display", "serif"],
+              sans: ["DM Sans", "sans-serif"],
+              number: ["Outfit", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: #f8f6f1;
+        margin: 0;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #c4bfb6;
+        border-radius: 3px;
+      }
+      .sidebar {
+        background: linear-gradient(
+          180deg,
+          #043030 0%,
+          #074949 40%,
+          #0a6363 100%
+        );
+      }
+      .sidebar-link {
+        transition: all 0.25s ease;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+      }
+      .sidebar-link:hover,
+      .sidebar-link.active {
+        background: rgba(255, 255, 255, 0.1);
+        border-left-color: #d4a039;
+      }
+      .sidebar-link.active {
+        background: rgba(255, 255, 255, 0.15);
+      }
+      .badge {
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+      }
+      .badge-active {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .badge-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-changed {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-superadmin {
+        background: #e0e7ff;
+        color: #3730a3;
+      }
+      .badge-admin {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .badge-done {
+        background: #e2e8f0;
+        color: #475569;
+      }
+      .badge-completed {
+        background: #e2e8f0;
+        color: #64748b;
+      }
+      .modal-overlay {
+        background: rgba(4, 48, 48, 0.5);
+        backdrop-filter: blur(4px);
+      }
+      .modal-enter {
+        animation: modalIn 0.3s ease;
+      }
+      @keyframes modalIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95) translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+      .toast {
+        animation:
+          toastIn 0.4s ease,
+          toastOut 0.4s ease 2.6s forwards;
+      }
+      @keyframes toastIn {
+        from {
+          opacity: 0;
+          transform: translateX(100%);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes toastOut {
+        from {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateX(100%);
+        }
+      }
+      .table-row {
+        transition: background 0.15s ease;
+      }
+      .table-row:hover {
+        background: #f0ede4;
+      }
+      tr.border-b td, tr.table-row td {
+        border-bottom: 1px solid #c9c1c1 !important;
+      }
+      .overflow-x-auto {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+      }
+      .overflow-x-auto thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: #fdfcfa !important;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #0e7e7e;
+        box-shadow: 0 0 0 3px rgba(14, 126, 126, 0.15);
+      }
+      .bg-pattern {
+        background-image: radial-gradient(
+          circle at 1px 1px,
+          rgba(14, 126, 126, 0.04) 1px,
+          transparent 0
+        );
+        background-size: 24px 24px;
+      }
+      .profit-pos {
+        color: #16a34a;
+      }
+      .profit-neg {
+        color: #dc2626;
+      }
+      .row-active {
+        border-left: 3px solid #16a34a;
+        background: rgba(22, 163, 74, 0.03);
+      }
+      .row-cancelled {
+        border-left: 3px solid #dc2626;
+        background: rgba(220, 38, 38, 0.04);
+      }
+      .row-changed {
+        border-left: 3px solid #f59e0b;
+        background: rgba(245, 158, 11, 0.04);
+      }
+      .row-done {
+        border-left: 3px solid #94a3b8;
+        background: rgba(148, 163, 184, 0.05);
+        opacity: 0.6;
+      }
+      .row-done:hover {
+        opacity: 0.85;
+      }
+      @keyframes blinkAlert {
+        0%,
+        100% {
+          opacity: 1;
+          box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+        }
+        50% {
+          opacity: 0.7;
+          box-shadow: 0 0 12px 4px rgba(245, 158, 11, 0.2);
+        }
+      }
+      .due-alert {
+        animation: blinkAlert 1.5s infinite;
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+      }
+      .login-bg {
+        background: linear-gradient(
+          135deg,
+          #043030 0%,
+          #0a6363 50%,
+          #0e7e7e 100%
+        );
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .input-indigo:focus {
+        outline: none;
+        border-color: #4f46e5 !important;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important;
+      }
+      .input-red:focus {
+        outline: none;
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+      }
+      .client-active {
+        border-left: 4px solid #d4a039;
+      }
+      .client-done {
+        background: #f8fafc;
+        border-left: 4px solid #94a3b8;
+        opacity: 0.85;
+      }
+      .client-done:hover {
+        opacity: 1;
+      }
+      .client-done .client-name {
+        color: #475569 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dbSetupScreen" class="login-bg hidden">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 mx-4">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 rounded-2xl bg-pri-500 flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-database text-white text-2xl"></i>
+          </div>
+          <h1 class="font-display font-bold text-pri-800 text-2xl">Connect Database</h1>
+          <p class="text-pri-600/50 text-sm mt-1">
+            Enter your Supabase URL & Anon Key
+          </p>
+        </div>
+        <form id="dbSetupForm" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Supabase Project URL</label>
+            <input type="url" id="dbUrlInput" required class="w-full border border-cream-300 rounded-lg px-4 py-3 text-sm" placeholder="https://your-project.supabase.co" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Supabase Anon Key</label>
+            <textarea id="dbKeyInput" required rows="3" class="w-full border border-cream-300 rounded-lg px-4 py-3 text-sm resize-none" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+          </div>
+          <div id="dbSetupError" class="hidden text-red-500 text-xs text-center bg-red-50 p-2 rounded-lg"></div>
+          <button type="submit" class="w-full bg-pri-500 hover:bg-pri-600 text-white py-3 rounded-lg text-sm font-semibold transition-colors">
+            Connect & Initialize
+          </button>
+          <button type="button" onclick="hideDbSetup()" class="w-full border border-cream-300 text-pri-600 py-2.5 rounded-lg text-sm font-semibold hover:bg-cream-100 transition-colors mt-2">
+            Cancel & Use Offline
+          </button>
+        </form>
+        <div class="mt-6 pt-6 border-t border-cream-200 text-center">
+          <p class="text-[11px] text-pri-600/40 leading-relaxed">
+            Need help? Follow the steps in <code class="bg-cream-100 px-1 py-0.5 rounded text-pri-700">supabase_setup.sql</code> to create your database tables and seed demo data.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="loginScreen" class="login-bg">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 mx-4">
+        <div class="text-center mb-8">
+          <div
+            class="w-16 h-16 rounded-2xl bg-pri-500 flex items-center justify-center mx-auto mb-4"
+          >
+            <i class="fas fa-globe-americas text-white text-2xl"></i>
+          </div>
+          <h1 class="font-display font-bold text-pri-800 text-2xl">TravelCRM</h1>
+          <p class="text-pri-600/50 text-sm mt-1">
+            Travel & Tourism Management
+          </p>
+        </div>
+        <form id="loginForm" class="space-y-4">
+          <div>
+            <label
+              class="block text-xs font-semibold text-pri-600/70 uppercase mb-1"
+              >Username</label
+            ><input
+              type="text"
+              id="loginUser"
+              required
+              class="w-full border border-cream-300 rounded-lg px-4 py-3 text-sm"
+              placeholder="Enter username"
+            />
+          </div>
+          <div>
+            <label
+              class="block text-xs font-semibold text-pri-600/70 uppercase mb-1"
+              >Password</label
+            ><input
+              type="password"
+              id="loginPass"
+              required
+              class="w-full border border-cream-300 rounded-lg px-4 py-3 text-sm"
+              placeholder="Enter password"
+            />
+          </div>
+          <div
+            id="loginError"
+            class="hidden text-red-500 text-xs text-center bg-red-50 p-2 rounded-lg"
+          ></div>
+          <button
+            type="submit"
+            id="loginSubmitBtn"
+            class="w-full bg-pri-500 hover:bg-pri-600 text-white py-3 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+          >
+            Sign In
+          </button>
+        </form>
+        <div class="mt-4 pt-4 border-t border-cream-200 flex items-center justify-between text-xs text-pri-600/40">
+          <p>Default: SupremeAdmin / 1002</p>
+          <button type="button" onclick="showDbSetup()" class="text-pri-500 hover:text-pri-700 font-semibold flex items-center gap-1">
+            <i class="fas fa-database text-[10px]"></i> Database Setup
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mainApp" class="hidden">
+      <aside
+        class="sidebar w-64 h-screen fixed left-0 top-0 z-40 flex flex-col"
+      >
+        <div class="p-5 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-lg bg-pri-500 flex items-center justify-center"
+            >
+              <i class="fas fa-globe-americas text-white text-lg"></i>
+            </div>
+            <div>
+              <h1
+                class="font-display font-bold text-white text-lg leading-tight"
+              >
+                TravelCRM
+              </h1>
+              <p class="text-pri-200 text-xs opacity-60" id="roleLabel">
+                Travel & Tourism
+              </p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 py-3 overflow-y-auto" id="sidebarNav">
+          <a
+            class="sidebar-link active flex items-center gap-3 px-5 py-2.5 text-white/90 text-sm"
+            data-view="dashboard"
+            ><i class="fas fa-chart-line w-5 text-center"></i>Dashboard</a
+          >
+          <a
+            class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+            data-view="clients"
+            ><i class="fas fa-users w-5 text-center"></i>Clients</a
+          >
+          <div class="px-5 pt-3 pb-1">
+            <span
+              class="text-[10px] text-white/30 uppercase tracking-widest font-semibold"
+              >Bookings</span
+            >
+          </div>
+          <a
+            class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+            data-view="flight"
+            ><i class="fas fa-plane w-5 text-center"></i>Flight Booking</a
+          >
+          <a
+            class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+            data-view="hotel"
+            ><i class="fas fa-hotel w-5 text-center"></i>Hotel Booking</a
+          >
+          <a
+            class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+            data-view="guide"
+            ><i class="fas fa-train w-5 text-center"></i>Train Booking</a
+          >
+          <a
+            class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+            data-view="transport"
+            ><i class="fas fa-bus w-5 text-center"></i>Bus/Taxi Booking</a
+          >
+          <a
+            class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+            data-view="visa"
+            ><i class="fas fa-ship w-5 text-center"></i>Boat Booking</a
+          >
+          <a
+            class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+            data-view="insurance"
+            ><i class="fas fa-user-tie w-5 text-center"></i>Guide Booking</a
+          >
+          <a
+            class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+            data-view="finances"
+            ><i class="fas fa-coins w-5 text-center"></i>Finances</a
+          >
+          <div id="superAdminNav" class="hidden">
+            <div class="px-5 pt-3 pb-1">
+              <span
+                class="text-[10px] text-white/30 uppercase tracking-widest font-semibold"
+                >Super Admin</span
+              >
+            </div>
+            <a
+              class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+              data-view="users"
+              ><i class="fas fa-user-shield w-5 text-center"></i>User
+              Management</a
+            ><a
+              class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+              data-view="recycle"
+              ><i class="fas fa-trash-restore w-5 text-center"></i>Recycle
+              Bin</a
+            ><a
+              class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+              data-view="activity"
+              ><i class="fas fa-clipboard-list w-5 text-center"></i>Activity
+              Log</a
+            ><a
+              class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-white/70 text-sm"
+              id="backupNavLink"
+              data-view="backup"
+              ><i class="fas fa-database w-5 text-center"></i>Backup &
+              Restore</a
+            >
+          </div>
+        </nav>
+        <div class="p-5 border-t border-white/10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div
+                class="w-8 h-8 rounded-full bg-acc-400/30 flex items-center justify-center"
+              >
+                <i class="fas fa-user text-acc-200 text-xs"></i>
+              </div>
+              <div>
+                <p class="text-white text-xs font-medium" id="userName">
+                  Admin
+                </p>
+                <p class="text-white/40 text-[10px]" id="userRole">Role</p>
+              </div>
+            </div>
+            <button
+              onclick="logout()"
+              class="text-white/40 hover:text-white text-xs"
+              title="Logout"
+            >
+              <i class="fas fa-sign-out-alt"></i>
+            </button>
+          </div>
+        </div>
+      </aside>
+      <main class="ml-64 flex-1 min-h-screen bg-pattern">
+        <header
+          class="sticky top-0 z-30 bg-cream-100/80 backdrop-blur-md border-b border-cream-300 px-8 py-4 flex items-center justify-between"
+        >
+          <div>
+            <h2
+              class="font-display font-bold text-pri-800 text-xl"
+              id="pageTitle"
+            >
+              Dashboard
+            </h2>
+            <p class="text-pri-600/60 text-xs mt-0.5" id="pageSubtitle">
+              Overview
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <input
+                type="text"
+                id="globalSearch"
+                placeholder="Search..."
+                class="bg-white border border-cream-300 rounded-lg pl-9 pr-4 py-2 text-sm w-56"
+              /><i
+                class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-cream-400 text-xs"
+              ></i>
+            </div>
+            <div
+              id="alertBell"
+              class="relative w-9 h-9 rounded-lg bg-white border border-cream-300 flex items-center justify-center cursor-pointer hover:bg-cream-200"
+              onclick="showDueAlerts()"
+            >
+              <i class="fas fa-bell text-pri-600 text-sm"></i
+              ><span
+                id="alertCount"
+                class="hidden absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] items-center justify-center"
+                >0</span
+              >
+            </div>
+          </div>
+        </header>
+        <div class="p-8" id="mainContent"></div>
+      </main>
+    </div>
+    <div
+      id="modalOverlay"
+      class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center p-4"
+    >
+      <div
+        id="modalContent"
+        class="modal-enter bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
+      ></div>
+    </div>
+    <div
+      id="toastContainer"
+      class="fixed top-6 right-6 z-[60] flex flex-col gap-3"
+    ></div>
+
+    <script>
+      var nextId = { client: 11, booking: 20, user: 2, log: 1 };
+      var currentUser = null;
+      var users = [
+        {
+          id: 1,
+          username: "SupremeAdmin",
+          password: "1002",
+          role: "supremeadmin",
+          name: "Supreme Admin",
+          active: true,
+          createdAt: "01-01-2024",
+          parentUser: null,
+        },
+      ];
+      var clients = [
+        {
+          id: 1,
+          name: "Sarah Mitchell",
+          email: "sarah.mitchell@email.co.uk",
+          phone: "+44 7911 123456",
+          nationality: "British",
+          passportNo: "GB12345678",
+          address: "23 Kensington Lane, London, UK",
+          notes: "Prefers 5-star hotels. Vegetarian meals.",
+          createdAt: "15-01-2024",
+          status: "active",
+        },
+        {
+          id: 2,
+          name: "Ahmed Al-Rashid",
+          email: "ahmed.rashid@email.ae",
+          phone: "+971 50 9876543",
+          nationality: "Emirati",
+          passportNo: "AE98765432",
+          address: "Al Wasl Road, Dubai, UAE",
+          notes: "Family trips with kids.",
+          createdAt: "22-01-2024",
+          status: "active",
+        },
+        {
+          id: 3,
+          name: "Maria Garcia",
+          email: "maria.garcia@email.es",
+          phone: "+34 612 345678",
+          nationality: "Spanish",
+          passportNo: "ES34567890",
+          address: "Calle Gran Via 45, Madrid, Spain",
+          notes: "Honeymoon couple.",
+          createdAt: "05-02-2024",
+          status: "active",
+        },
+        {
+          id: 4,
+          name: "James Wilson",
+          email: "james.wilson@email.com.au",
+          phone: "+61 4 1234 5678",
+          nationality: "Australian",
+          passportNo: "AU56789012",
+          address: "15 Harbour Rd, Sydney, Australia",
+          notes: "Adventure traveler.",
+          createdAt: "14-02-2024",
+          status: "active",
+        },
+        {
+          id: 5,
+          name: "Yuki Tanaka",
+          email: "yuki.tanaka@email.jp",
+          phone: "+81 90 1234 5678",
+          nationality: "Japanese",
+          passportNo: "JP78901234",
+          address: "Shibuya-ku 2-15, Tokyo, Japan",
+          notes: "English-speaking guide required.",
+          createdAt: "28-02-2024",
+          status: "active",
+        },
+        {
+          id: 6,
+          name: "Pierre Dubois",
+          email: "pierre.dubois@email.fr",
+          phone: "+33 6 12 34 56 78",
+          nationality: "French",
+          passportNo: "FR90123456",
+          address: "12 Rue de Rivoli, Paris, France",
+          notes: "Luxury traveler.",
+          createdAt: "10-03-2024",
+          status: "active",
+        },
+        {
+          id: 7,
+          name: "Elena Rossi",
+          email: "elena.rossi@email.it",
+          phone: "+39 333 1234567",
+          nationality: "Italian",
+          passportNo: "IT23456789",
+          address: "Via Roma 78, Rome, Italy",
+          notes: "Group of 6.",
+          createdAt: "18-03-2024",
+          status: "active",
+        },
+        {
+          id: 8,
+          name: "Hans Mueller",
+          email: "hans.mueller@email.de",
+          phone: "+49 171 1234567",
+          nationality: "German",
+          passportNo: "DE56789012",
+          address: "Berliner Str 33, Munich, Germany",
+          notes: "Business + leisure.",
+          createdAt: "01-04-2024",
+          status: "active",
+        },
+        {
+          id: 9,
+          name: "Li Wei Chen",
+          email: "liwei.chen@email.cn",
+          phone: "+86 138 1234 5678",
+          nationality: "Chinese",
+          passportNo: "CN89012345",
+          address: "Nanjing Road 100, Shanghai, China",
+          notes: "Needs visa assistance.",
+          createdAt: "15-04-2024",
+          status: "active",
+        },
+        {
+          id: 10,
+          name: "Ana Santos",
+          email: "ana.santos@email.br",
+          phone: "+55 11 91234 5678",
+          nationality: "Brazilian",
+          passportNo: "BR12345678",
+          address: "Av Paulista 200, Sao Paulo, Brazil",
+          notes: "Beach lover.",
+          createdAt: "02-05-2024",
+          status: "active",
+        },
+      ];
+      function tomorrowDDMMYYYY() {
+        var d = new Date();
+        d.setDate(d.getDate() + 1);
+        return (
+          String(d.getDate()).padStart(2, "0") +
+          "-" +
+          String(d.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          d.getFullYear()
+        );
+      }
+      var travelBookings = [
+        {
+          id: 1,
+          clientId: 1,
+          bookingType: "flight",
+          bookingName: "Emirates EK-502",
+          hotelOrVehicleOwner: "Emirates Airlines",
+          phoneNumber: "+971 4 214 4444",
+          bookingDate: "10-02-2024",
+          travelDate: "14-03-2024",
+          travelDateTo: "14-03-2024",
+          pnrRef: "VCR-FL-001",
+          totalAmountPayable: 38000,
+          amountPaid: 38000,
+          paymentDueDate: "15-02-2024",
+          amountCollected: 45000,
+          remarks: "Business class round trip",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "10-02-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 2,
+          clientId: 2,
+          bookingType: "flight",
+          bookingName: "Swiss Air LX-124",
+          hotelOrVehicleOwner: "Swiss International",
+          phoneNumber: "+41 44 286 6060",
+          bookingDate: "01-03-2024",
+          travelDate: "10-04-2024",
+          travelDateTo: "17-04-2024",
+          pnrRef: "VCR-FL-002",
+          totalAmountPayable: 65000,
+          amountPaid: 30000,
+          paymentDueDate: "01-04-2024",
+          amountCollected: 78000,
+          remarks: "Family of 4",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "01-03-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 3,
+          clientId: 3,
+          bookingType: "flight",
+          bookingName: "Aegean A3-450",
+          hotelOrVehicleOwner: "Aegean Airlines",
+          phoneNumber: "+30 210 626 1000",
+          bookingDate: "15-04-2024",
+          travelDate: "19-05-2024",
+          travelDateTo: "26-05-2024",
+          pnrRef: "VCR-FL-003",
+          totalAmountPayable: 26000,
+          amountPaid: 26000,
+          paymentDueDate: "20-04-2024",
+          amountCollected: 32000,
+          remarks: "Economy Plus couple",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "15-04-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 4,
+          clientId: 1,
+          bookingType: "hotel",
+          bookingName: "Soneva Fushi Resort",
+          hotelOrVehicleOwner: "Soneva Group",
+          phoneNumber: "+960 656 0555",
+          bookingDate: "20-01-2024",
+          travelDate: "15-03-2024",
+          travelDateTo: "22-03-2024",
+          pnrRef: "VCR-HT-001",
+          totalAmountPayable: 95000,
+          amountPaid: 95000,
+          paymentDueDate: "15-02-2024",
+          amountCollected: 120000,
+          remarks: "Water Villa 7 nights",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "20-01-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 5,
+          clientId: 6,
+          bookingType: "hotel",
+          bookingName: "Les Sources de Caudalie",
+          hotelOrVehicleOwner: "Caudalie Spa Group",
+          phoneNumber: "+33 5 57 83 83 83",
+          bookingDate: "01-04-2024",
+          travelDate: "05-08-2024",
+          travelDateTo: "09-08-2024",
+          pnrRef: "VCR-HT-002",
+          totalAmountPayable: 68000,
+          amountPaid: 0,
+          paymentDueDate: "05-07-2024",
+          amountCollected: 85000,
+          remarks: "Prestige Room wine tour",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "01-04-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 6,
+          clientId: 10,
+          bookingType: "hotel",
+          bookingName: "Excellence Playa Mujeres",
+          hotelOrVehicleOwner: "Excellence Group",
+          phoneNumber: "+52 998 872 8000",
+          bookingDate: "01-06-2024",
+          travelDate: "20-12-2024",
+          travelDateTo: "30-12-2024",
+          pnrRef: "VCR-HT-003",
+          totalAmountPayable: 115000,
+          amountPaid: 60000,
+          paymentDueDate: "20-11-2024",
+          amountCollected: 145000,
+          remarks: "Christmas package",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "01-06-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 7,
+          clientId: 7,
+          bookingType: "train",
+          bookingName: "Trenitalia Frecciarossa",
+          hotelOrVehicleOwner: "Trenitalia SpA",
+          phoneNumber: "+39 06 684 0001",
+          bookingDate: "18-04-2024",
+          travelDate: "12-09-2024",
+          travelDateTo: "12-09-2024",
+          pnrRef: "VCR-TR-001",
+          totalAmountPayable: 8500,
+          amountPaid: 8500,
+          paymentDueDate: "12-08-2024",
+          amountCollected: 12000,
+          remarks: "First class Rome-Florence",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "18-04-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 8,
+          clientId: 8,
+          bookingType: "train",
+          bookingName: "Deutsche Bahn ICE",
+          hotelOrVehicleOwner: "Deutsche Bahn AG",
+          phoneNumber: "+49 30 2970",
+          bookingDate: "01-05-2024",
+          travelDate: "01-10-2024",
+          travelDateTo: "01-10-2024",
+          pnrRef: "VCR-TR-002",
+          totalAmountPayable: 11000,
+          amountPaid: 5500,
+          paymentDueDate: "01-09-2024",
+          amountCollected: 15000,
+          remarks: "Munich to Berlin",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "01-05-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 9,
+          clientId: 6,
+          bookingType: "train",
+          bookingName: "TGV Paris-Lyon",
+          hotelOrVehicleOwner: "SNCF",
+          phoneNumber: "+33 1 84 94 00 00",
+          bookingDate: "15-06-2024",
+          travelDate: "05-09-2024",
+          travelDateTo: "05-09-2024",
+          pnrRef: "VCR-TR-003",
+          totalAmountPayable: 6800,
+          amountPaid: 6800,
+          paymentDueDate: "05-08-2024",
+          amountCollected: 9500,
+          remarks: "Train schedule changed",
+          status: "cancelled",
+          cancelChangeRemarks:
+            "Train schedule changed, client opted for refund",
+          createdBy: "Superadmin",
+          createdAt: "15-06-2024",
+          modifiedBy: "Superadmin",
+          modifiedAt: "20-06-2024",
+        },
+        {
+          id: 10,
+          clientId: 5,
+          bookingType: "bustaxi",
+          bookingName: "Airport Transfer Tokyo",
+          hotelOrVehicleOwner: "Tokyo Executive Cars",
+          phoneNumber: "+81 3 1234 5678",
+          bookingDate: "28-02-2024",
+          travelDate: "09-07-2024",
+          travelDateTo: "09-07-2024",
+          pnrRef: "VCR-BT-001",
+          totalAmountPayable: 2800,
+          amountPaid: 2800,
+          paymentDueDate: "09-06-2024",
+          amountCollected: 4500,
+          remarks: "Narita to Shinjuku",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "28-02-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 11,
+          clientId: 9,
+          bookingType: "bustaxi",
+          bookingName: "Shanghai Private Tour",
+          hotelOrVehicleOwner: "Shanghai Premium Tours",
+          phoneNumber: "+86 21 5678 9012",
+          bookingDate: "15-04-2024",
+          travelDate: "14-11-2024",
+          travelDateTo: "14-11-2024",
+          pnrRef: "VCR-BT-002",
+          totalAmountPayable: 5200,
+          amountPaid: 0,
+          paymentDueDate: "14-10-2024",
+          amountCollected: 8000,
+          remarks: "Full day private tour",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "15-04-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 12,
+          clientId: 4,
+          bookingType: "bustaxi",
+          bookingName: "Sydney Bus Tour",
+          hotelOrVehicleOwner: "Sydney Sightseeing Co",
+          phoneNumber: "+61 2 9876 5432",
+          bookingDate: "01-03-2024",
+          travelDate: "01-06-2024",
+          travelDateTo: "02-06-2024",
+          pnrRef: "VCR-BT-003",
+          totalAmountPayable: 1800,
+          amountPaid: 1800,
+          paymentDueDate: "01-05-2024",
+          amountCollected: 3500,
+          remarks: "Hop-on hop-off pass",
+          status: "changed",
+          cancelChangeRemarks: "Changed from 24hr to 48hr pass",
+          createdBy: "Superadmin",
+          createdAt: "01-03-2024",
+          modifiedBy: "Superadmin",
+          modifiedAt: "15-03-2024",
+        },
+        {
+          id: 13,
+          clientId: 5,
+          bookingType: "flight",
+          bookingName: "ANA NH-211",
+          hotelOrVehicleOwner: "All Nippon Airways",
+          phoneNumber: "+81 3 6735 1000",
+          bookingDate: "15-03-2024",
+          travelDate: "09-07-2024",
+          travelDateTo: "18-07-2024",
+          pnrRef: "VCR-FL-004",
+          totalAmountPayable: 56000,
+          amountPaid: 30000,
+          paymentDueDate: tomorrowDDMMYYYY(),
+          amountCollected: 72000,
+          remarks: "Business class - DUE TOMORROW",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "15-03-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+        {
+          id: 14,
+          clientId: 4,
+          bookingType: "hotel",
+          bookingName: "The Rees Hotel Queenstown",
+          hotelOrVehicleOwner: "The Rees Hotel Ltd",
+          phoneNumber: "+64 3 450 1100",
+          bookingDate: "01-07-2024",
+          travelDate: "01-12-2024",
+          travelDateTo: "10-12-2024",
+          pnrRef: "VCR-HT-004",
+          totalAmountPayable: 52000,
+          amountPaid: 0,
+          paymentDueDate: tomorrowDDMMYYYY(),
+          amountCollected: 68000,
+          remarks: "Lake View Studio - DUE TOMORROW",
+          status: "active",
+          cancelChangeRemarks: "",
+          createdBy: "Superadmin",
+          createdAt: "01-07-2024",
+          modifiedBy: "",
+          modifiedAt: "",
+        },
+      ];
+      var recycleBin = [];
+      var activityLog = [
+        {
+          id: nextId.log++,
+          user: "SupremeAdmin",
+          action: "system_init",
+          details: "System initialized",
+          timestamp: "01-01-2024 09:00",
+        },
+      ];
+      var state = {
+        currentView: "dashboard",
+        selectedClientId: null,
+        searchQuery: "",
+      };
+
+      // Raw data storage for Supabase/fallback operations
+      var rawUsers = [];
+      var rawClients = [];
+      var rawBookings = [];
+      var rawRecycleBin = [];
+      var rawActivityLog = [];
+
+      // Map older format Superadmin entries to SupremeAdmin & ensure ownerUser is present in fallback data
+      clients.forEach(function(c) {
+        if (!c.createdBy) c.createdBy = "SupremeAdmin";
+        if (!c.ownerUser) c.ownerUser = "SupremeAdmin";
+      });
+      travelBookings.forEach(function(b) {
+        if (b.createdBy === "Superadmin") b.createdBy = "SupremeAdmin";
+        if (b.modifiedBy === "Superadmin") b.modifiedBy = "SupremeAdmin";
+        if (!b.ownerUser) b.ownerUser = "SupremeAdmin";
+      });
+      activityLog.forEach(function(l) {
+        if (l.user === "Superadmin") l.user = "SupremeAdmin";
+      });
+
+      rawUsers = users;
+      rawClients = clients;
+      rawBookings = travelBookings;
+      rawRecycleBin = recycleBin;
+      rawActivityLog = activityLog;
+
+      // Database Configuration
+      const SUPABASE_URL = "https://negbjaglmevdyiobmwsz.supabase.co";
+      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5lZ2JqYWdsbWV2ZHlpb2Jtd3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjA2OTksImV4cCI6MjA5NjczNjY5OX0.Zd50uFKP4eq_sq30KvU7H4zLI8cBE8Bty014gS-eBp4";
+
+      var dbUrl = SUPABASE_URL || localStorage.getItem("supabase_url");
+      var dbKey = SUPABASE_KEY || localStorage.getItem("supabase_key");
+      var supabaseClient = null;
+
+      function camelToSnake(obj) {
+        if (obj === null || obj === undefined) return obj;
+        if (Array.isArray(obj)) return obj.map(camelToSnake);
+        if (typeof obj === "object") {
+          return Object.keys(obj).reduce(function (acc, key) {
+            var snake = key.replace(/[A-Z]/g, function (letter) {
+              return "_" + letter.toLowerCase();
+            });
+            acc[snake] = camelToSnake(obj[key]);
+            return acc;
+          }, {});
+        }
+        return obj;
+      }
+
+      function snakeToCamel(obj) {
+        if (obj === null || obj === undefined) return obj;
+        if (Array.isArray(obj)) return obj.map(snakeToCamel);
+        if (typeof obj === "object") {
+          return Object.keys(obj).reduce(function (acc, key) {
+            var camel = key.replace(/([-_][a-z])/g, function (group) {
+              return group.toUpperCase().replace("-", "").replace("_", "");
+            });
+            acc[camel] = snakeToCamel(obj[key]);
+            return acc;
+          }, {});
+        }
+        return obj;
+      }
+
+      function initSupabase() {
+        if (dbUrl && dbKey) {
+          try {
+            supabaseClient = window.supabase.createClient(dbUrl, dbKey);
+            return true;
+          } catch (e) {
+            console.error("Failed to initialize Supabase client", e);
+          }
+        }
+        return false;
+      }
+
+      async function loadDataFromSupabase() {
+        if (!supabaseClient) return;
+        var btn = document.getElementById("loginSubmitBtn");
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Loading database...";
+        }
+        try {
+          const { data: dbUsers, error: usersErr } = await supabaseClient
+            .from("users")
+            .select("*")
+            .order("id");
+          if (usersErr) throw usersErr;
+          rawUsers = snakeToCamel(dbUsers) || [];
+          
+          var hasSupreme = rawUsers.some(function(u) {
+            return u.username.toLowerCase() === "supremeadmin";
+          });
+          if (!hasSupreme) {
+            rawUsers.unshift({
+              id: 9999,
+              username: "SupremeAdmin",
+              password: "1002",
+              role: "supremeadmin",
+              name: "Supreme Admin",
+              active: true,
+              createdAt: "01-01-2024",
+              parentUser: null
+            });
+          }
+
+          const { data: dbClients, error: clientsErr } = await supabaseClient
+            .from("clients")
+            .select("*")
+            .order("id");
+          if (clientsErr) throw clientsErr;
+          rawClients = snakeToCamel(dbClients) || [];
+
+          const { data: dbBookings, error: bookingsErr } = await supabaseClient
+            .from("bookings")
+            .select("*")
+            .order("id");
+          if (bookingsErr) throw bookingsErr;
+          rawBookings = snakeToCamel(dbBookings) || [];
+
+          const { data: dbRecycle, error: recycleErr } = await supabaseClient
+            .from("recycle_bin")
+            .select("*")
+            .order("id");
+          if (recycleErr) throw recycleErr;
+          rawRecycleBin = snakeToCamel(dbRecycle) || [];
+
+          const { data: dbLog, error: logErr } = await supabaseClient
+            .from("activity_log")
+            .select("*")
+            .order("id", { ascending: false });
+          if (logErr) throw logErr;
+          rawActivityLog = snakeToCamel(dbLog) || [];
+
+          applyDataVisibilityFilter();
+
+          if (rawClients.length) nextId.client = Math.max(...rawClients.map(c => c.id)) + 1;
+          if (rawBookings.length) nextId.booking = Math.max(...rawBookings.map(b => b.id)) + 1;
+          if (rawUsers.length) nextId.user = Math.max(...rawUsers.map(u => u.id)) + 1;
+          if (rawActivityLog.length) nextId.log = Math.max(...rawActivityLog.map(l => l.id)) + 1;
+
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Sign In";
+          }
+        } catch (e) {
+          console.error("Error loading data from Supabase:", e);
+          toast("Error loading database tables. Check your setup SQL script. Offline mode active.", "error");
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Sign In";
+          }
+        }
+      }
+
+      function applyDataVisibilityFilter() {
+        if (!currentUser) {
+          users = rawUsers;
+          clients = rawClients;
+          travelBookings = rawBookings;
+          recycleBin = rawRecycleBin;
+          activityLog = rawActivityLog;
+          return;
+        }
+
+        var username = currentUser.username;
+        var role = currentUser.role;
+
+        if (role === "supremeadmin") {
+          users = rawUsers;
+          clients = rawClients;
+          travelBookings = rawBookings;
+          recycleBin = rawRecycleBin;
+          activityLog = rawActivityLog;
+        } else if (role === "superadmin") {
+          users = rawUsers.filter(function(u) {
+            return u.username === username || u.parentUser === username;
+          });
+          clients = rawClients.filter(function(c) {
+            return c.ownerUser === username;
+          });
+          travelBookings = rawBookings.filter(function(b) {
+            return b.ownerUser === username;
+          });
+          recycleBin = rawRecycleBin.filter(function(item) {
+            return item.data && item.data.ownerUser === username;
+          });
+          activityLog = rawActivityLog.filter(function(l) {
+            var logUser = rawUsers.find(function(x) { return x.username === l.user; });
+            if (!logUser) return false;
+            var owner = logUser.role === "admin" ? logUser.parentUser : logUser.username;
+            return owner === username;
+          });
+        } else if (role === "admin") {
+          var parentUser = currentUser.parentUser;
+          users = rawUsers.filter(function(u) {
+            return u.username === username;
+          });
+          clients = rawClients.filter(function(c) {
+            return c.ownerUser === parentUser;
+          });
+          travelBookings = rawBookings.filter(function(b) {
+            return b.ownerUser === parentUser;
+          });
+          recycleBin = rawRecycleBin.filter(function(item) {
+            return item.data && item.data.ownerUser === parentUser;
+          });
+          activityLog = rawActivityLog.filter(function(l) {
+            var logUser = rawUsers.find(function(x) { return x.username === l.user; });
+            if (!logUser) return false;
+            var owner = logUser.role === "admin" ? logUser.parentUser : logUser.username;
+            return owner === parentUser;
+          });
+        }
+      }
+
+      /* ===== UTILITIES ===== */
+      function fmt(n) {
+        return (
+          "\u20B9" +
+          new Intl.NumberFormat("en-IN", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          }).format(Math.round(n))
+        );
+      }
+      function parseD(s) {
+        if (!s) return null;
+        var p = s.split("-");
+        return p.length === 3 ? new Date(p[2], p[1] - 1, p[0]) : null;
+      }
+      function fD(d) {
+        return d || "\u2014";
+      }
+      function todayStr() {
+        var n = new Date();
+        return (
+          String(n.getDate()).padStart(2, "0") +
+          "-" +
+          String(n.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          n.getFullYear()
+        );
+      }
+      function toInp(d) {
+        if (!d) return "";
+        var p = d.split("-");
+        return p.length === 3 ? p[2] + "-" + p[1] + "-" + p[0] : "";
+      }
+      function fromInp(d) {
+        if (!d) return "";
+        var p = d.split("-");
+        return p.length === 3 ? p[2] + "-" + p[1] + "-" + p[0] : "";
+      }
+      function nowTS() {
+        var n = new Date();
+        return (
+          String(n.getDate()).padStart(2, "0") +
+          "-" +
+          String(n.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          n.getFullYear() +
+          " " +
+          String(n.getHours()).padStart(2, "0") +
+          ":" +
+          String(n.getMinutes()).padStart(2, "0")
+        );
+      }
+      function gC(id) {
+        return clients.find(function (c) {
+          return c.id == id;
+        });
+      }
+      function unpaid(b) {
+        return b.totalAmountPayable - b.amountPaid;
+      }
+      function bkProfit(b) {
+        return b.amountCollected - b.totalAmountPayable;
+      }
+      function daysUntilDate(s) {
+        var d = parseD(s);
+        if (!d) return null;
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        d.setHours(0, 0, 0, 0);
+        return Math.round((d - today) / (1000 * 60 * 60 * 24));
+      }
+      function isDueTom(s) {
+        return daysUntilDate(s) === 1;
+      }
+      function supplierDueDate(b) {
+        return b.supplierPaymentDueDate || b.paymentDueDate;
+      }
+      function hasSupplierBalance(b) {
+        return unpaid(b) > 0;
+      }
+      function shouldShowSupplierPaymentAlert(b) {
+        if (!b || b.status !== "active" || !hasSupplierBalance(b)) return false;
+        var days = daysUntilDate(supplierDueDate(b));
+        return days !== null && days <= 2;
+      }
+      function supplierPaymentAlertLabel(b) {
+        var days = daysUntilDate(supplierDueDate(b));
+        if (days === null) return "";
+        if (days < 0) return "OVERDUE";
+        if (days === 0) return "DUE TODAY";
+        if (days === 1) return "DUE TOMORROW";
+        return "DUE IN " + days + " DAYS";
+      }
+      function supplierPaymentAlertClass(b) {
+        var days = daysUntilDate(supplierDueDate(b));
+        return days !== null && days < 0
+          ? "text-red-600"
+          : "text-amber-600";
+      }
+      function isSupplierPaymentOverdue(b) {
+        var days = daysUntilDate(supplierDueDate(b));
+        return days !== null && days < 0 && hasSupplierBalance(b);
+      }
+      function isOverdue(s) {
+        var d = parseD(s);
+        if (!d) return false;
+        var t = new Date();
+        t.setHours(0, 0, 0, 0);
+        d.setHours(0, 0, 0, 0);
+        return d < t;
+      }
+      function isSettled(b) {
+        if (unpaid(b) > 0) return false;
+        return true;
+      }
+      function sBadge(s) {
+        var m = {
+          active: "badge-active",
+          cancelled: "badge-cancelled",
+          changed: "badge-changed",
+          done: "badge-done",
+          completed: "badge-completed",
+        };
+        return (
+          '<span class="badge ' +
+          (m[s] || "badge-active") +
+          '">' +
+          s +
+          "</span>"
+        );
+      }
+      function rClass(b) {
+        var c =
+          b.status === "cancelled"
+            ? "row-cancelled"
+            : b.status === "changed"
+              ? "row-changed"
+              : b.status === "completed"
+                ? "row-done"
+                : "row-active";
+        if (shouldShowSupplierPaymentAlert(b))
+          c += " due-alert";
+        return c;
+      }
+      async function addLog(a, d) {
+        var logEntry = {
+          user: currentUser ? currentUser.username : "System",
+          action: a,
+          details: d,
+          timestamp: nowTS(),
+        };
+        activityLog.unshift(Object.assign({ id: nextId.log++ }, logEntry));
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from("activity_log").insert(camelToSnake(logEntry));
+          } catch(e) {
+            console.error("Failed to insert log entry", e);
+          }
+        }
+      }
+      function canDel() {
+        return currentUser && (currentUser.role === "supremeadmin" || currentUser.role === "superadmin");
+      }
+      function fTravel(b) {
+        if (!b.travelDate) return "\u2014";
+        var d = fD(b.travelDate) +
+          (b.travelDateTo && b.travelDateTo !== b.travelDate
+            ? " \u2192 " + fD(b.travelDateTo)
+            : "");
+        if (b.bookingType === 'flight' && (b.travelFrom || b.travelTo)) {
+          d += "<br><span class='text-[10px] text-pri-600/50'>" + (b.travelFrom || '?') + " to " + (b.travelTo || '?') + "</span>";
+        }
+        return d;
+      }
+
+      /* Sort bookings: Chronological by Payment Due Date (earliest/nearest first) */
+      function sortBookings(arr) {
+        return arr.slice().sort(function (a, b) {
+          var da = parseD(supplierDueDate(a));
+          var db = parseD(supplierDueDate(b));
+          if (!da && !db) return 0;
+          if (!da) return 1;
+          if (!db) return -1;
+          return da - db;
+        });
+      }
+
+      function toast(msg, type) {
+        type = type || "success";
+        var c = document.getElementById("toastContainer");
+        var cl = {
+          success: "bg-green-600",
+          error: "bg-red-600",
+          info: "bg-pri-600",
+          warning: "bg-amber-600",
+        };
+        var ic = {
+          success: "fa-check-circle",
+          error: "fa-exclamation-circle",
+          info: "fa-info-circle",
+          warning: "fa-exclamation-triangle",
+        };
+        var t = document.createElement("div");
+        t.className =
+          "toast " +
+          (cl[type] || cl.info) +
+          " text-white px-5 py-3 rounded-lg shadow-lg flex items-center gap-3 text-sm";
+        t.innerHTML = '<i class="fas ' + (ic[type] || ic.info) + '"></i>' + msg;
+        c.appendChild(t);
+        setTimeout(function () {
+          t.remove();
+        }, 3200);
+      }
+      function openM(h) {
+        document.getElementById("modalOverlay").classList.remove("hidden");
+        document.getElementById("modalOverlay").classList.add("flex");
+        document.getElementById("modalContent").innerHTML = h;
+      }
+      function closeM() {
+        document.getElementById("modalOverlay").classList.add("hidden");
+        document.getElementById("modalOverlay").classList.remove("flex");
+      }
+      var modalMouseDownTarget = null;
+      document
+        .getElementById("modalOverlay")
+        .addEventListener("mousedown", function (e) {
+          modalMouseDownTarget = e.target;
+        });
+      document
+        .getElementById("modalOverlay")
+        .addEventListener("mouseup", function (e) {
+          if (
+            e.target === document.getElementById("modalOverlay") &&
+            modalMouseDownTarget === document.getElementById("modalOverlay")
+          )
+            closeM();
+          modalMouseDownTarget = null;
+        });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          var tag = e.target.tagName.toLowerCase();
+          if (tag === "input" || tag === "select" || tag === "textarea") {
+            if (tag === "textarea") return;
+            e.preventDefault();
+            var form = e.target.closest("form");
+            if (form) {
+              var els = Array.from(
+                form.querySelectorAll(
+                  "input:not([type=hidden]):not([readonly]),select,textarea,button[type=submit]",
+                ),
+              );
+              var idx = els.indexOf(e.target);
+              if (idx >= 0 && idx < els.length - 1) els[idx + 1].focus();
+              else if (idx === els.length - 1) {
+                var btn = form.querySelector("button[type=submit]");
+                if (btn) btn.click();
+              }
+            }
+          }
+        }
+      });
+
+      /* ===== LOGIN ===== */
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          var u = document.getElementById("loginUser").value.trim();
+          var p = document.getElementById("loginPass").value;
+          var user = users.find(function (x) {
+            return x.username.toLowerCase() === u.toLowerCase() && x.password === p && x.active;
+          });
+          if (!user) {
+            document.getElementById("loginError").classList.remove("hidden");
+            document.getElementById("loginError").textContent =
+              "Invalid credentials or account deactivated";
+            return;
+          }
+          currentUser = user;
+          applyDataVisibilityFilter();
+          await addLog("login", "User " + user.username + " logged in");
+          document.getElementById("loginScreen").classList.add("hidden");
+          document.getElementById("mainApp").classList.remove("hidden");
+          document.getElementById("userName").textContent = user.name;
+          
+          var roleDisplay = "Admin";
+          if (user.role === "supremeadmin") roleDisplay = "Supreme Admin";
+          else if (user.role === "superadmin") roleDisplay = "Super Admin";
+          
+          document.getElementById("userRole").textContent = roleDisplay;
+          document.getElementById("roleLabel").textContent = roleDisplay;
+          
+          if (user.role === "supremeadmin" || user.role === "superadmin") {
+            document.getElementById("superAdminNav").classList.remove("hidden");
+            if (user.role === "supremeadmin") {
+              document.getElementById("backupNavLink").classList.remove("hidden");
+            } else {
+              document.getElementById("backupNavLink").classList.add("hidden");
+            }
+          } else {
+            document.getElementById("superAdminNav").classList.add("hidden");
+          }
+          render();
+          checkDue();
+        });
+      function logout() {
+        addLog("logout", "User " + currentUser.username + " logged out");
+        currentUser = null;
+        applyDataVisibilityFilter();
+        document.getElementById("mainApp").classList.add("hidden");
+        document.getElementById("loginScreen").classList.remove("hidden");
+        document.getElementById("loginUser").value = "";
+        document.getElementById("loginPass").value = "";
+        document.getElementById("loginError").classList.add("hidden");
+      }
+      function checkDue() {
+        var due = travelBookings.filter(function (b) {
+          return shouldShowSupplierPaymentAlert(b);
+        });
+        var bell = document.getElementById("alertCount");
+        if (due.length > 0) {
+          bell.classList.remove("hidden");
+          bell.style.display = "flex";
+          bell.textContent = due.length;
+          toast(
+            due.length + " supplier payment reminder(s) need attention.",
+            "warning",
+          );
+        } else {
+          bell.classList.add("hidden");
+          bell.style.display = "none";
+          bell.textContent = "";
+        }
+      }
+      function showDueAlerts() {
+        var due = travelBookings.filter(function (b) {
+          return shouldShowSupplierPaymentAlert(b);
+        });
+        var h =
+          '<div class="w-full max-w-lg p-6"><h3 class="font-display font-bold text-pri-800 text-lg mb-4"><i class="fas fa-bell text-amber-500 mr-2"></i>Supplier Payment Alerts</h3>';
+        if (!due.length)
+          h += '<p class="text-sm text-pri-600/60">No alerts.</p>';
+        else {
+          due.forEach(function (b) {
+            var cl = gC(b.clientId);
+            var ov = isSupplierPaymentOverdue(b);
+            h +=
+              '<div class="p-3 rounded-lg mb-2 ' +
+              (ov
+                ? "bg-red-50 border border-red-200"
+                : "bg-amber-50 border border-amber-200") +
+              '"><p class="text-sm font-semibold text-pri-800">' +
+              (cl ? cl.name : "?") +
+              " - " +
+              b.bookingName +
+              '</p><p class="text-xs text-pri-600/70">' +
+              b.pnrRef +
+              " | Due: " +
+              fD(supplierDueDate(b)) +
+              " | Supplier balance: " +
+              fmt(unpaid(b)) +
+              '</p><p class="text-xs ' +
+              supplierPaymentAlertClass(b) +
+              ' font-semibold mt-1">' +
+              supplierPaymentAlertLabel(b) +
+              "</p></div>";
+          });
+        }
+        h +=
+          '<button onclick="closeM()" class="mt-4 w-full bg-pri-500 hover:bg-pri-600 text-white py-2 rounded-lg text-sm font-semibold">Close</button></div>';
+        openM(h);
+      }
+
+      /* ===== NAVIGATION ===== */
+      document.querySelectorAll("[data-view]").forEach(function (link) {
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+          var v = link.dataset.view;
+          state.currentView = v;
+          state.selectedClientId = null;
+          state.searchQuery = "";
+          document.getElementById("globalSearch").value = "";
+          document.querySelectorAll("[data-view]").forEach(function (l) {
+            l.classList.remove("active");
+            l.classList.replace("text-white/90", "text-white/70");
+          });
+          link.classList.add("active");
+          link.classList.replace("text-white/70", "text-white/90");
+          render();
+        });
+      });
+      document
+        .getElementById("globalSearch")
+        .addEventListener("input", function (e) {
+          state.searchQuery = e.target.value.toLowerCase();
+          render();
+        });
+
+      /* ===== RENDER ===== */
+      var vTitles = {
+        dashboard: ["Dashboard", "Overview"],
+        clients: ["Clients", "Client database"],
+        flight: ["Flight Bookings", "Flight reservations"],
+        hotel: ["Hotel Bookings", "Hotel reservations"],
+        guide: ["Train Bookings", "Train reservations"],
+        transport: ["Bus/Taxi Bookings", "Bus/Taxi reservations"],
+        visa: ["Boat Bookings", "Boat reservations"],
+        insurance: ["Guide Bookings", "Guide reservations"],
+        finances: ["Finances", "Payment tracking"],
+        users: ["User Management", "Admin accounts"],
+        recycle: ["Recycle Bin", "Deleted records"],
+        activity: ["Activity Log", "System actions"],
+        clientDetail: ["Client Profile", "Client details"],
+        backup: ["Backup & Restore", "Manage your data"],
+      };
+      function render() {
+        var t = vTitles[state.currentView] || ["", ""];
+        document.getElementById("pageTitle").textContent = t[0];
+        document.getElementById("pageSubtitle").textContent = t[1];
+        var mc = document.getElementById("mainContent");
+        switch (state.currentView) {
+          case "dashboard":
+            mc.innerHTML = rDash();
+            break;
+          case "clients":
+            mc.innerHTML = rClients();
+            break;
+          case "clientDetail":
+            mc.innerHTML = rCDetail();
+            break;
+          case "flight":
+          case "hotel":
+          case "guide":
+          case "transport":
+          case "visa":
+          case "insurance":
+            mc.innerHTML = rBkView(state.currentView);
+            break;
+          case "finances":
+            mc.innerHTML = rFin();
+            break;
+          case "users":
+            mc.innerHTML = rUsers();
+            break;
+          case "recycle":
+            mc.innerHTML = rRecycle();
+            break;
+          case "activity":
+            mc.innerHTML = rActivity();
+            break;
+          case "backup":
+            mc.innerHTML = rBackup();
+            break;
+        }
+      }
+      function navTo(v) {
+        state.currentView = v;
+        state.selectedClientId = null;
+        document.querySelectorAll("[data-view]").forEach(function (l) {
+          l.classList.remove("active");
+          l.classList.replace("text-white/90", "text-white/70");
+        });
+        var el = document.querySelector('[data-view="' + v + '"]');
+        if (el) {
+          el.classList.add("active");
+          el.classList.replace("text-white/70", "text-white/90");
+        }
+        render();
+      }
+
+      /* ===== DASHBOARD ===== */
+      function rDash() {
+        var ac = travelBookings.filter(function (b) {
+          return b.status === "active";
+        });
+        var tC = ac.reduce(function (s, b) {
+          return s + b.amountCollected;
+        }, 0);
+        var tP = ac.reduce(function (s, b) {
+          return s + b.totalAmountPayable;
+        }, 0);
+        var tPd = ac.reduce(function (s, b) {
+          return s + b.amountPaid;
+        }, 0);
+        var tPr = ac.reduce(function (s, b) {
+          return s + bkProfit(b);
+        }, 0);
+        var ov = travelBookings.filter(function (b) {
+          return isSupplierPaymentOverdue(b);
+        }).length;
+        var dt = travelBookings.filter(function (b) {
+          return shouldShowSupplierPaymentAlert(b) && !isSupplierPaymentOverdue(b);
+        }).length;
+        var tc = { flight: 0, hotel: 0, guide: 0, transport: 0, visa: 0, insurance: 0 };
+        travelBookings.forEach(function (b) {
+          if (b.status === "active")
+            tc[b.bookingType] = (tc[b.bookingType] || 0) + 1;
+        });
+        return (
+          '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8"><div class="bg-white rounded-xl p-5 border border-cream-300 card-hover"><div class="flex items-center justify-between mb-3"><span class="text-xs font-semibold text-pri-600/60 uppercase tracking-wider">Clients</span><div class="w-9 h-9 rounded-lg bg-pri-50 flex items-center justify-center"><i class="fas fa-users text-pri-500 text-sm"></i></div></div><p class="font-number font-bold text-3xl text-pri-800">' +
+          clients.length +
+          '</p></div><div class="bg-white rounded-xl p-5 border border-cream-300 card-hover"><div class="flex items-center justify-between mb-3"><span class="text-xs font-semibold text-acc-600/60 uppercase tracking-wider">Collected</span><div class="w-9 h-9 rounded-lg bg-acc-50 flex items-center justify-center"><i class="fas fa-hand-holding-dollar text-acc-500 text-sm"></i></div></div><p class="font-number font-bold text-3xl text-acc-800">' +
+          fmt(tC) +
+          '</p></div><div class="bg-white rounded-xl p-5 border border-cream-300 card-hover"><div class="flex items-center justify-between mb-3"><span class="text-xs font-semibold text-red-600/60 uppercase tracking-wider">Unpaid</span><div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center"><i class="fas fa-exclamation-triangle text-red-500 text-sm"></i></div></div><p class="font-number font-bold text-3xl text-red-500">' +
+          fmt(tP - tPd) +
+          '</p><p class="text-xs text-red-600/50 mt-1">' +
+          ov +
+          " overdue, " +
+          dt +
+          ' reminders</p></div><div class="bg-white rounded-xl p-5 border border-cream-300 card-hover"><div class="flex items-center justify-between mb-3"><span class="text-xs font-semibold text-green-600/60 uppercase tracking-wider">Profit</span><div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center"><i class="fas fa-chart-line text-green-500 text-sm"></i></div></div><p class="font-number font-bold text-3xl ' +
+          (tPr >= 0 ? "text-green-700" : "text-red-700") +
+          '">' +
+          fmt(tPr) +
+          '</p></div></div><div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">' +
+          bTypeCard("flight", "Flights", tc.flight, "blue") +
+          bTypeCard("hotel", "Hotels", tc.hotel, "purple") +
+          bTypeCard("guide", "Trains", tc.guide, "emerald") +
+          bTypeCard("transport", "Bus/Taxi", tc.transport, "orange") +
+          bTypeCard("visa", "Boats", tc.visa, "cyan") +
+          bTypeCard("insurance", "Guides", tc.insurance, "pink") +
+          '</div><div class="bg-white rounded-xl border border-cream-300 p-6"><h3 class="font-display font-bold text-pri-800 mb-4">Collection Progress</h3><div class="flex items-center gap-4 mb-3"><div class="flex-1 h-4 bg-cream-200 rounded-full overflow-hidden"><div class="bg-green-500 h-full" style="width:' +
+          (tP > 0 ? (tPd / tP) * 100 : 0) +
+          '%"></div></div><span class="text-sm font-semibold text-pri-700">' +
+          (tP > 0 ? ((tPd / tP) * 100).toFixed(1) : 0) +
+          '%</span></div><div class="flex gap-6 text-xs text-pri-600/60"><span><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>Paid: ' +
+          fmt(tPd) +
+          '</span><span><span class="inline-block w-2 h-2 rounded-full bg-cream-300 mr-1"></span>Owed: ' +
+          fmt(tP - tPd) +
+          "</span></div></div>"
+        );
+      }
+      function bTypeCard(v, label, cnt, color) {
+        var icon =
+          v === "flight"
+            ? "fa-plane"
+            : v === "hotel"
+              ? "fa-hotel"
+              : v === "guide"
+                ? "fa-train"
+                : v === "transport"
+                  ? "fa-bus"
+                  : v === "visa"
+                    ? "fa-ship"
+                    : "fa-user-tie";
+        return (
+          '<div class="bg-white rounded-xl border border-cream-300 p-4 card-hover cursor-pointer" onclick="navTo(\'' +
+          v +
+          '\')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-' +
+          color +
+          '-50 flex items-center justify-center"><i class="fas ' +
+          icon +
+          " text-" +
+          color +
+          '-500"></i></div><div><p class="text-xs text-pri-600/50">' +
+          label +
+          '</p><p class="text-lg font-bold text-pri-800">' +
+          cnt +
+          "</p></div></div></div>"
+        );
+      }
+
+      /* ===== CLIENTS ===== */
+      function rClients() {
+        var q = state.searchQuery;
+        var f = clients.filter(function (c) {
+          return (
+            !q ||
+            c.name.toLowerCase().indexOf(q) >= 0 ||
+            c.email.toLowerCase().indexOf(q) >= 0 ||
+            c.nationality.toLowerCase().indexOf(q) >= 0
+          );
+        });
+        f.sort(function (a, b) {
+          if (a.status === "done" && b.status !== "done") return 1;
+          if (a.status !== "done" && b.status === "done") return -1;
+          return 0;
+        });
+        return (
+          '<div class="flex items-center justify-between mb-6"><p class="text-sm text-pri-600/60">' +
+          f.length +
+          ' clients</p><button onclick="openCForm()" class="bg-pri-500 hover:bg-pri-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"><i class="fas fa-plus text-xs"></i>Add Client</button></div><div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">' +
+          f
+            .map(function (c) {
+              var bk = travelBookings.filter(function (b) {
+                return b.clientId === c.id && b.status === "active";
+              });
+              var tot = bk.reduce(function (s, b) {
+                return s + b.amountCollected;
+              }, 0);
+              var isDone = c.status === "done";
+              var cardClass = isDone
+                ? "client-done border-slate-300"
+                : "client-active border-cream-300";
+              var badge = isDone
+                ? ' <span class="badge badge-done">Completed</span>'
+                : "";
+              var h =
+                '<div class="bg-white rounded-xl border ' +
+                cardClass +
+                ' p-5 card-hover cursor-pointer" onclick="viewC(' +
+                c.id +
+                ')"><div class="flex items-start gap-4 mb-4"><div class="w-12 h-12 rounded-full ' +
+                (isDone ? "bg-slate-100" : "bg-pri-100") +
+                ' flex items-center justify-center shrink-0"><span class="font-display font-bold ' +
+                (isDone ? "text-slate-500" : "text-pri-600") +
+                ' text-lg">' +
+                c.name
+                  .split(" ")
+                  .map(function (n) {
+                    return n[0];
+                  })
+                  .join("") +
+                '</span></div><div class="flex-1 min-w-0"><h4 class="font-semibold client-name text-pri-800 truncate">' +
+                c.name +
+                badge +
+                '</h4><p class="text-xs text-pri-600/60 truncate">' +
+                c.email +
+                '</p><p class="text-xs text-pri-600/50 mt-0.5"><i class="fas fa-flag mr-1"></i>' +
+                c.nationality +
+                '</p></div></div><div class="grid grid-cols-2 gap-3 pt-3 border-t border-cream-200"><div class="text-center"><p class="text-xs text-pri-600/50">Bookings</p><p class="text-sm font-bold text-pri-700">' +
+                bk.length +
+                '</p></div><div class="text-center"><p class="text-xs text-pri-600/50">Collected</p><p class="text-sm font-bold text-green-600">' +
+                fmt(tot) +
+                "</p></div></div>";
+              h +=
+                '<div class="mt-3 pt-3 border-t border-cream-200 flex gap-2">';
+              if (isDone) {
+                h +=
+                  '<button onclick="event.stopPropagation();newBookingForDoneClient(' +
+                  c.id +
+                  ')" class="flex-1 bg-pri-500 hover:bg-pri-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"><i class="fas fa-plus mr-1"></i>New Booking</button>';
+              } else {
+                h +=
+                  '<button onclick="event.stopPropagation();markClientDone(' +
+                  c.id +
+                  ')" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"><i class="fas fa-check mr-1"></i>Done</button>';
+              }
+              h +=
+                '<button onclick="event.stopPropagation();openCForm(' +
+                c.id +
+                ')" class="bg-pri-50 hover:bg-pri-100 text-pri-700 px-3 py-1.5 rounded-lg text-xs font-semibold"><i class="fas fa-edit"></i></button>';
+              if (canDel())
+                h +=
+                  '<button onclick="event.stopPropagation();delC(' +
+                  c.id +
+                  ')" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold"><i class="fas fa-trash"></i></button>';
+              h += "</div></div>";
+              return h;
+            })
+            .join("") +
+          "</div>"
+        );
+      }
+      async function markClientDone(id) {
+        var c = gC(id);
+        if (!c) return;
+        var outstanding = travelBookings.filter(function (b) {
+          return b.clientId === id && b.status === "active" && !isSettled(b);
+        });
+        if (outstanding.length > 0) {
+          toast(
+            "Cannot mark as Done: Outstanding payments exist. Please settle all finances first.",
+            "error",
+          );
+          return;
+        }
+        try {
+          const { error: clientError } = await supabaseClient.from("clients").update({ status: "done" }).eq("id", id);
+          if (clientError) throw clientError;
+          const { error: bookingsError } = await supabaseClient.from("bookings").update({ status: "completed" }).eq("client_id", id).eq("status", "active");
+          if (bookingsError) throw bookingsError;
+          await addLog("mark_done", "Marked client " + c.name + " as done.");
+          toast("Client marked as completed. All bookings settled.", "info");
+          await loadDataFromSupabase();
+          render();
+        } catch (err) {
+          console.error(err);
+          toast("Failed to complete client status", "error");
+        }
+      }
+      async function markBookingDone(id) {
+        var b = travelBookings.find(function (x) {
+          return x.id === id;
+        });
+        if (!b) return;
+        if (!isSettled(b)) {
+          toast(
+            "Cannot mark as Done: Outstanding payments exist. Please settle finances first.",
+            "error",
+          );
+          return;
+        }
+        try {
+          const { error } = await supabaseClient.from("bookings").update({
+            status: "completed",
+            modified_by: currentUser ? currentUser.username : "",
+            modified_at: nowTS()
+          }).eq("id", id);
+          if (error) throw error;
+          await addLog(
+            "mark_booking_done",
+            "Marked booking " + b.pnrRef + " as completed.",
+          );
+          toast("Booking marked as completed and settled.", "info");
+          await loadDataFromSupabase();
+          render();
+        } catch (err) {
+          console.error(err);
+          toast("Failed to complete booking", "error");
+        }
+      }
+      async function newBookingForDoneClient(id) {
+        var c = gC(id);
+        if (!c) return;
+        try {
+          const { error } = await supabaseClient.from("clients").update({ status: "active" }).eq("id", id);
+          if (error) throw error;
+          await addLog(
+            "reactivate_client",
+            "Reactivated client " + c.name + " via new booking",
+          );
+          openBForm(null, null, id);
+          await loadDataFromSupabase();
+          render();
+        } catch (err) {
+          console.error(err);
+          toast("Failed to reactivate client", "error");
+        }
+      }
+      function viewC(id) {
+        state.currentView = "clientDetail";
+        state.selectedClientId = id;
+        render();
+      }
+
+      function rCDetail() {
+        var c = gC(state.selectedClientId);
+        if (!c) return '<p class="text-red-500">Not found.</p>';
+        var bk = sortBookings(
+          travelBookings.filter(function (b) {
+            return b.clientId === c.id;
+          }),
+        );
+        var ac = bk.filter(function (b) {
+          return b.status === "active";
+        });
+        var tC = ac.reduce(function (s, b) {
+          return s + b.amountCollected;
+        }, 0);
+        var tP = ac.reduce(function (s, b) {
+          return s + b.totalAmountPayable;
+        }, 0);
+        var tPd = ac.reduce(function (s, b) {
+          return s + b.amountPaid;
+        }, 0);
+        var tPr = ac.reduce(function (s, b) {
+          return s + bkProfit(b);
+        }, 0);
+        var h =
+          '<button onclick="navTo(\'clients\')" class="text-sm text-pri-500 hover:text-pri-700 mb-4 inline-flex items-center gap-2"><i class="fas fa-arrow-left text-xs"></i>Back</button>';
+        h +=
+          '<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6"><div class="bg-white rounded-xl border border-cream-300 p-6"><div class="flex items-center gap-4 mb-5"><div class="w-16 h-16 rounded-full bg-pri-100 flex items-center justify-center"><span class="font-display font-bold text-pri-600 text-2xl">' +
+          c.name
+            .split(" ")
+            .map(function (n) {
+              return n[0];
+            })
+            .join("") +
+          '</span></div><div><h3 class="font-display font-bold text-pri-800 text-xl">' +
+          c.name +
+          '</h3><p class="text-xs text-pri-600/60">' +
+          c.nationality +
+          " &middot; " +
+          c.passportNo +
+          '</p></div></div><div class="space-y-3 text-sm"><div class="flex items-center gap-3 text-pri-700"><i class="fas fa-envelope w-5 text-center text-pri-400"></i>' +
+          c.email +
+          '</div><div class="flex items-center gap-3 text-pri-700"><i class="fas fa-phone w-5 text-center text-pri-400"></i>' +
+          c.phone +
+          '</div><div class="flex items-center gap-3 text-pri-700"><i class="fas fa-map-marker-alt w-5 text-center text-pri-400"></i>' +
+          c.address +
+          '</div></div><div class="mt-5 pt-4 border-t border-cream-200 flex gap-2"><button onclick="openCForm(' +
+          c.id +
+          ')" class="flex-1 bg-pri-50 hover:bg-pri-100 text-pri-700 px-3 py-2 rounded-lg text-xs font-semibold"><i class="fas fa-edit mr-1"></i>Edit</button>';
+        if (canDel())
+          h +=
+            '<button onclick="delC(' +
+            c.id +
+            ')" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-xs font-semibold"><i class="fas fa-trash"></i></button>';
+        h +=
+          '</div></div><div class="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">' +
+          miniCard("Collected", fmt(tC), "text-green-600") +
+          miniCard("Payable", fmt(tP), "text-acc-700") +
+          miniCard("Paid", fmt(tPd), "text-pri-700") +
+          miniCard("Unpaid", fmt(tP - tPd), "text-red-500") +
+          miniCard("Profit", fmt(tPr), tPr >= 0 ? "profit-pos" : "profit-neg") +
+          "</div></div>";
+        h +=
+          '<div class="bg-white rounded-xl border border-cream-300 p-6 mb-6"><h4 class="font-display font-bold text-pri-800 mb-3"><i class="fas fa-sticky-note text-acc-400 mr-2"></i>Notes</h4><p class="text-sm text-pri-700 leading-relaxed">' +
+          (c.notes || "No notes.") +
+          "</p></div>";
+        h +=
+          '<div class="bg-white rounded-xl border border-cream-300 overflow-hidden mb-6"><div class="px-6 py-4 border-b border-cream-200 flex items-center justify-between"><h4 class="font-display font-bold text-pri-800">All Bookings</h4><div class="flex gap-2">';
+        ["flight", "hotel", "guide", "transport", "visa", "insurance"].forEach(function (t) {
+          var ic =
+            t === "flight"
+              ? "fa-plane"
+              : t === "hotel"
+                ? "fa-hotel"
+                : t === "guide"
+                  ? "fa-train"
+                  : t === "transport"
+                    ? "fa-bus"
+                    : t === "visa"
+                      ? "fa-ship"
+                      : "fa-user-tie";
+          var lb =
+            t === "guide"
+              ? "Train"
+              : t === "transport"
+                ? "Bus/Taxi"
+                : t === "visa"
+                  ? "Boat"
+                  : t === "insurance"
+                    ? "Guide"
+                    : t.charAt(0).toUpperCase() + t.slice(1);
+          h +=
+            "<button onclick=\"openBForm(null,'" +
+            t +
+            "'," +
+            c.id +
+            ')" class="bg-pri-50 hover:bg-pri-100 text-pri-700 px-3 py-1.5 rounded-lg text-xs font-semibold"><i class="fas ' +
+            ic +
+            ' mr-1"></i>' +
+            lb +
+            "</button>";
+        });
+        h +=
+          '</div></div><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="bg-cream-50 text-left"><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Type</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Name</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Ref. no.</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Booked on</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Status</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Collected</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Payable</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Unpaid</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Profit</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">DUE DATE</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Actions</th></tr></thead><tbody>';
+        bk.forEach(function (b) {
+          var ic =
+            b.bookingType === "flight"
+              ? "fa-plane text-blue-500"
+              : b.bookingType === "hotel"
+                ? "fa-hotel text-purple-500"
+                : b.bookingType === "guide"
+                  ? "fa-train text-emerald-500"
+                  : b.bookingType === "transport"
+                    ? "fa-bus text-orange-500"
+                    : b.bookingType === "visa"
+                      ? "fa-ship text-cyan-500"
+                      : b.bookingType === "insurance"
+                        ? "fa-user-tie text-pink-500"
+                        : "fa-circle text-slate-500";
+          var tl =
+            b.bookingType === "flight"
+              ? "Flight"
+              : b.bookingType === "hotel"
+                ? "Hotel"
+                : b.bookingType === "guide"
+                  ? "Train"
+                  : b.bookingType === "transport"
+                    ? "Bus/Taxi"
+                    : b.bookingType === "visa"
+                      ? "Boat"
+                      : b.bookingType === "insurance"
+                        ? "Guide"
+                        : b.bookingType.charAt(0).toUpperCase() + b.bookingType.slice(1);
+          h +=
+            '<tr class="' +
+            rClass(b) +
+            ' border-b border-cream-100"><td class="px-3 py-2.5"><i class="fas ' +
+            ic +
+            ' mr-1"></i>' +
+            tl +
+            '</td><td class="px-3 py-2.5 font-medium text-pri-800">' +
+            b.bookingName +
+            '</td><td class="px-3 py-2.5 font-mono text-acc-600">' +
+            b.pnrRef +
+            '</td><td class="px-3 py-2.5 font-bold text-green-800">' +
+            fTravel(b) +
+            '</td><td class="px-3 py-2.5">' +
+            sBadge(b.status) +
+            '</td><td class="px-3 py-2.5 font-semibold text-green-600">' +
+            fmt(b.amountCollected) +
+            '</td><td class="px-3 py-2.5 text-pri-800">' +
+            fmt(b.totalAmountPayable) +
+            '</td><td class="px-3 py-2.5 font-semibold ' +
+            (unpaid(b) > 0 ? "text-red-500" : "text-green-600") +
+            '">' +
+            fmt(unpaid(b)) +
+            '</td><td class="px-3 py-2.5 font-semibold ' +
+            (bkProfit(b) >= 0 ? "profit-pos" : "profit-neg") +
+            '">' +
+            fmt(bkProfit(b)) +
+            '</td><td class="px-3 py-2.5">' +
+            '<span class="inline-block px-2 py-0.5 border-2 border-red-600 rounded bg-[#dedddc] text-red-800 font-bold text-xs text-center whitespace-nowrap">' + fD(supplierDueDate(b)) + '</span>' +
+            "</td>";
+          h += '<td class="px-3 py-2.5"><div class="flex gap-1">';
+          if (b.status === "active") {
+            h +=
+              '<button onclick="openBForm(' +
+              b.id +
+              ')" class="text-pri-400 hover:text-pri-600" title="Edit"><i class="fas fa-edit"></i></button><button onclick="markBookingDone(' +
+              b.id +
+              ')" class="text-green-400 hover:text-green-600" title="Mark Done"><i class="fas fa-check-circle"></i></button><button onclick="cancelBk(' +
+              b.id +
+              ')" class="text-red-400 hover:text-red-600" title="Cancel"><i class="fas fa-ban"></i></button><button onclick="changeBk(' +
+              b.id +
+              ')" class="text-amber-400 hover:text-amber-600" title="Change"><i class="fas fa-exchange-alt"></i></button>';
+          } else {
+            h +=
+              '<span class="text-[10px] ' +
+              (b.status === "cancelled" ? "text-red-500" : "text-amber-500") +
+              ' font-bold">' +
+              b.status.toUpperCase() +
+              "</span>";
+          }
+          if (canDel())
+            h +=
+              '<button onclick="delBk(' +
+              b.id +
+              ')" class="text-red-300 hover:text-red-600 ml-1" title="Delete"><i class="fas fa-trash"></i></button>';
+          h += "</div></td></tr>";
+        });
+        h +=
+          '</tbody><tfoot><tr class="bg-cream-50 font-bold text-xs"><td colspan="5" class="px-3 py-3">Total (Active)</td><td class="px-3 py-3 text-green-600">' +
+          fmt(tC) +
+          '</td><td class="px-3 py-3">' +
+          fmt(tP) +
+          '</td><td class="px-3 py-3 text-red-500">' +
+          fmt(tP - tPd) +
+          '</td><td class="px-3 py-3 ' +
+          (tPr >= 0 ? "profit-pos" : "profit-neg") +
+          '">' +
+          fmt(tPr) +
+          '</td><td colspan="2"></td></tr></tfoot></table></div></div>';
+        bk.filter(function (b) {
+          return b.remarks || b.cancelChangeRemarks;
+        }).forEach(function (b) {
+          h +=
+            '<div class="p-4 rounded-lg mb-3 ' +
+            (b.status === "cancelled"
+              ? "bg-red-50 border border-red-200"
+              : b.status === "changed"
+                ? "bg-amber-50 border border-amber-200"
+                : b.status === "completed"
+                  ? "bg-slate-50 border border-slate-200"
+                  : "bg-cream-50 border border-cream-200") +
+            '"><div class="flex items-center justify-between mb-1"><span class="font-semibold text-sm text-pri-800">' +
+            b.pnrRef +
+            " - " +
+            b.bookingName +
+            "</span>" +
+            sBadge(b.status) +
+            '</div><p class="text-xs text-pri-700">' +
+            b.remarks +
+            "</p>";
+          if (b.cancelChangeRemarks)
+            h +=
+              '<p class="text-xs ' +
+              (b.status === "cancelled" ? "text-red-600" : "text-amber-600") +
+              ' mt-1 font-semibold"><i class="fas fa-info-circle mr-1"></i>' +
+              b.cancelChangeRemarks +
+              "</p>";
+          h += "</div>";
+        });
+        return h;
+      }
+      function miniCard(label, val, cls) {
+        return (
+          '<div class="bg-white rounded-xl border border-cream-300 p-4 text-center"><p class="text-xs text-pri-600/50 uppercase font-semibold">' +
+          label +
+          '</p><p class="font-number font-bold text-xl ' +
+          cls +
+          ' mt-1">' +
+          val +
+          "</p></div>"
+        );
+      }
+
+      /* ===== BOOKING VIEW ===== */
+      function rBkView(btype) {
+        var q = state.searchQuery;
+        var labels = {
+          flight: "Flight",
+          hotel: "Hotel",
+          guide: "Train",
+          transport: "Bus/Taxi",
+          visa: "Boat",
+          insurance: "Guide",
+        };
+        var filtered = travelBookings.filter(function (b) {
+          return b.bookingType === btype;
+        });
+        if (state.selectedClientId)
+          filtered = filtered.filter(function (b) {
+            return b.clientId === state.selectedClientId;
+          });
+        if (q)
+          filtered = filtered.filter(function (b) {
+            var cl = gC(b.clientId);
+            return (
+              b.bookingName.toLowerCase().indexOf(q) >= 0 ||
+              b.pnrRef.toLowerCase().indexOf(q) >= 0 ||
+              (cl && cl.name.toLowerCase().indexOf(q) >= 0)
+            );
+          });
+        var sorted = sortBookings(filtered);
+        var ac = filtered.filter(function (b) {
+          return b.status === "active";
+        });
+        var tC = ac.reduce(function (s, b) {
+          return s + b.amountCollected;
+        }, 0);
+        var tP = ac.reduce(function (s, b) {
+          return s + b.totalAmountPayable;
+        }, 0);
+        var tPr = ac.reduce(function (s, b) {
+          return s + bkProfit(b);
+        }, 0);
+        var h =
+          '<div class="flex items-center justify-between mb-6"><div class="flex items-center gap-4"><select onchange="state.selectedClientId=this.value?parseInt(this.value):null;render()" class="border border-cream-300 rounded-lg px-3 py-2 text-sm"><option value="">All Clients</option>';
+        clients.forEach(function (c) {
+          h +=
+            '<option value="' +
+            c.id +
+            '"' +
+            (state.selectedClientId === c.id ? " selected" : "") +
+            ">" +
+            c.name +
+            "</option>";
+        });
+        h +=
+          '</select><div class="flex gap-3 text-xs"><span class="text-pri-600/60">Collected: <b class="text-green-600">' +
+          fmt(tC) +
+          '</b></span><span class="text-pri-600/60">Payable: <b class="text-acc-600">' +
+          fmt(tP) +
+          '</b></span><span class="text-pri-600/60">Profit: <b class="' +
+          (tPr >= 0 ? "profit-pos" : "profit-neg") +
+          '">' +
+          fmt(tPr) +
+          "</b></span></div></div>";
+        h +=
+          "<button onclick=\"openBForm(null,'" +
+          btype +
+          '\')" class="bg-pri-500 hover:bg-pri-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2"><i class="fas fa-plus text-xs"></i>New ' +
+          labels[btype] +
+          "</button></div>";
+        var ownerLabel =
+          btype === "hotel" || btype === "bustaxi" || btype === "boat"
+            ? "Contact Person"
+            : "Operator";
+        h +=
+          '<div class="bg-white rounded-xl border border-cream-300 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="bg-cream-50 text-left"><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Client</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Booking Name</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">' +
+          ownerLabel +
+          '</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Phone</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Reserved for</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Booked on</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Ref. no.</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Status</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Collected</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Payable</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Paid</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Unpaid</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Profit</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">DUE DATE</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Actions</th></tr></thead><tbody>';
+        sorted.forEach(function (b) {
+          var cl = gC(b.clientId);
+          h +=
+            '<tr class="' +
+            rClass(b) +
+            ' border-b border-cream-100"><td class="px-3 py-2.5 font-medium text-pri-800 cursor-pointer hover:text-pri-500" onclick="viewC(' +
+            b.clientId +
+            ')">' +
+            (cl ? cl.name : "?") +
+            '</td><td class="px-3 py-2.5 text-pri-800 font-medium">' +
+            b.bookingName +
+            '</td><td class="px-3 py-2.5 text-pri-600">' +
+            (b.hotelOrVehicleOwner || "\u2014") +
+            '</td><td class="px-3 py-2.5 text-pri-600/70">' +
+            (b.phoneNumber || "\u2014") +
+            '</td><td class="px-3 py-2.5 text-pri-600/70">' +
+            fD(b.bookingDate) +
+            '</td><td class="px-3 py-2.5 font-bold text-green-800">' +
+            fTravel(b) +
+            '</td><td class="px-3 py-2.5 font-mono text-acc-600">' +
+            b.pnrRef +
+            '</td><td class="px-3 py-2.5">' +
+            sBadge(b.status) +
+            '</td><td class="px-3 py-2.5 font-semibold text-green-600">' +
+            fmt(b.amountCollected) +
+            '</td><td class="px-3 py-2.5 text-pri-800">' +
+            fmt(b.totalAmountPayable) +
+            '</td><td class="px-3 py-2.5 text-pri-700">' +
+            fmt(b.amountPaid) +
+            '</td><td class="px-3 py-2.5 font-semibold ' +
+            (unpaid(b) > 0 ? "text-red-500" : "text-green-600") +
+            '">' +
+            fmt(unpaid(b)) +
+            '</td><td class="px-3 py-2.5 font-semibold ' +
+            (bkProfit(b) >= 0 ? "profit-pos" : "profit-neg") +
+            '">' +
+            fmt(bkProfit(b)) +
+            '</td><td class="px-3 py-2.5">' +
+            '<span class="inline-block px-2 py-0.5 border-2 border-red-600 rounded bg-[#dedddc] text-red-800 font-bold text-xs text-center whitespace-nowrap">' + fD(supplierDueDate(b)) + '</span>' +
+            (shouldShowSupplierPaymentAlert(b)
+              ? '<br><span class="' + supplierPaymentAlertClass(b) + ' font-bold text-[10px]">' + supplierPaymentAlertLabel(b) + '</span>'
+              : "") +
+            "</td>";
+          h += '<td class="px-3 py-2.5"><div class="flex gap-1 flex-wrap">';
+          if (b.status === "active") {
+            h +=
+              '<button onclick="openBForm(' +
+              b.id +
+              ')" class="text-pri-400 hover:text-pri-600" title="Edit"><i class="fas fa-edit"></i></button><button onclick="cancelBk(' +
+              b.id +
+              ')" class="text-red-400 hover:text-red-600" title="Cancel"><i class="fas fa-ban"></i></button><button onclick="changeBk(' +
+              b.id +
+              ')" class="text-amber-400 hover:text-amber-600" title="Change"><i class="fas fa-exchange-alt"></i></button>';
+          } else {
+            h +=
+              '<span class="text-[10px] ' +
+              (b.status === "cancelled" ? "text-red-500" : "text-amber-500") +
+              ' font-bold">' +
+              b.status.toUpperCase() +
+              "</span>";
+          }
+          if (canDel())
+            h +=
+              '<button onclick="delBk(' +
+              b.id +
+              ')" class="text-red-300 hover:text-red-600" title="Delete"><i class="fas fa-trash"></i></button>';
+          h += "</div></td></tr>";
+        });
+        h += "</tbody></table></div></div>";
+        return h;
+      }
+
+      /* ===== FINANCES ===== */
+      function rFin() {
+        var ac = travelBookings.filter(function (b) {
+          return b.status === "active";
+        });
+        var aC = ac.reduce(function (s, b) {
+          return s + b.amountCollected;
+        }, 0);
+        var aP = ac.reduce(function (s, b) {
+          return s + b.totalAmountPayable;
+        }, 0);
+        var aPd = ac.reduce(function (s, b) {
+          return s + b.amountPaid;
+        }, 0);
+        var aPr = ac.reduce(function (s, b) {
+          return s + bkProfit(b);
+        }, 0);
+        var ov = travelBookings.filter(function (b) {
+          return isSupplierPaymentOverdue(b);
+        });
+        var h = '<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">';
+        h +=
+          miniCard("Collected", fmt(aC), "text-green-600") +
+          miniCard("Payable", fmt(aP), "text-acc-700") +
+          miniCard("Paid", fmt(aPd), "text-pri-700") +
+          miniCard("Unpaid", fmt(aP - aPd), "text-red-500") +
+          miniCard("Profit", fmt(aPr), aPr >= 0 ? "profit-pos" : "profit-neg") +
+          "</div>";
+        if (ov.length) {
+          h +=
+            '<div class="bg-red-50 rounded-xl border border-red-200 p-5 mb-6"><h3 class="font-semibold text-red-800 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>Overdue (' +
+            ov.length +
+            ')</h3><div class="space-y-2">';
+          ov.forEach(function (b) {
+            var cl = gC(b.clientId);
+            h +=
+              '<div class="flex items-center justify-between text-sm"><span class="text-red-700">' +
+              (cl ? cl.name : "?") +
+              " - " +
+              b.bookingName +
+              " (" +
+              b.pnrRef +
+              ')</span><span class="font-bold text-red-600">' +
+              fmt(unpaid(b)) +
+              " due " +
+              fD(supplierDueDate(b)) +
+              "</span></div>";
+          });
+          h += "</div></div>";
+        }
+        h +=
+          '<div class="bg-white rounded-xl border border-cream-300 overflow-hidden"><div class="px-6 py-4 border-b border-cream-200"><h3 class="font-display font-bold text-pri-800">Financial Breakdown</h3></div><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="bg-cream-50 text-left"><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Type</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Client</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Booking</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Status</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Collected</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Payable</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Paid</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Unpaid</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Profit</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">Margin</th><th class="px-3 py-2.5 font-semibold text-pri-600/60 uppercase">DUE DATE</th></tr></thead><tbody>';
+        travelBookings.forEach(function (b) {
+          var cl = gC(b.clientId);
+          var mg =
+            b.amountCollected > 0
+              ? ((bkProfit(b) / b.amountCollected) * 100).toFixed(1)
+              : 0;
+          var od = isSupplierPaymentOverdue(b);
+          var ic =
+            b.bookingType === "flight"
+              ? "fa-plane text-blue-500"
+              : b.bookingType === "hotel"
+                ? "fa-hotel text-purple-500"
+                : b.bookingType === "guide"
+                  ? "fa-train text-emerald-500"
+                  : b.bookingType === "transport"
+                    ? "fa-bus text-orange-500"
+                    : b.bookingType === "visa"
+                      ? "fa-ship text-cyan-500"
+                      : b.bookingType === "insurance"
+                        ? "fa-user-tie text-pink-500"
+                        : "fa-circle text-slate-500";
+          var tl =
+            b.bookingType === "flight"
+              ? "Flight"
+              : b.bookingType === "hotel"
+                ? "Hotel"
+                : b.bookingType === "guide"
+                  ? "Train"
+                  : b.bookingType === "transport"
+                    ? "Bus/Taxi"
+                    : b.bookingType === "visa"
+                      ? "Boat"
+                      : b.bookingType === "insurance"
+                        ? "Guide"
+                        : b.bookingType.charAt(0).toUpperCase() + b.bookingType.slice(1);
+          h +=
+            '<tr class="' +
+            (od ? "bg-red-50/50" : "") +
+            ' border-b border-cream-100"><td class="px-3 py-2.5"><i class="fas ' +
+            ic +
+            ' mr-1"></i>' +
+            tl +
+            '</td><td class="px-3 py-2.5 font-medium text-pri-800">' +
+            (cl ? cl.name : "?") +
+            '</td><td class="px-3 py-2.5">' +
+            b.bookingName +
+            '</td><td class="px-3 py-2.5">' +
+            sBadge(b.status) +
+            '</td><td class="px-3 py-2.5 font-semibold text-green-600">' +
+            fmt(b.amountCollected) +
+            '</td><td class="px-3 py-2.5">' +
+            fmt(b.totalAmountPayable) +
+            '</td><td class="px-3 py-2.5">' +
+            fmt(b.amountPaid) +
+            '</td><td class="px-3 py-2.5 font-semibold ' +
+            (unpaid(b) > 0 ? "text-red-500" : "text-green-600") +
+            '">' +
+            fmt(unpaid(b)) +
+            '</td><td class="px-3 py-2.5 font-semibold ' +
+            (bkProfit(b) >= 0 ? "profit-pos" : "profit-neg") +
+            '">' +
+            fmt(bkProfit(b)) +
+            '</td><td class="px-3 py-2.5 text-pri-600/70">' +
+            mg +
+            '%</td><td class="px-3 py-2.5">' +
+            '<span class="inline-block px-2 py-0.5 border-2 border-red-600 rounded bg-[#dedddc] text-red-800 font-bold text-xs text-center whitespace-nowrap">' + fD(supplierDueDate(b)) + '</span>' +
+            "</td></tr>";
+        });
+        h +=
+          '</tbody><tfoot><tr class="bg-cream-50 font-bold text-xs"><td colspan="4">Grand Total</td><td class="px-3 py-3 text-green-600">' +
+          fmt(aC) +
+          '</td><td class="px-3 py-3">' +
+          fmt(aP) +
+          '</td><td class="px-3 py-3">' +
+          fmt(aPd) +
+          '</td><td class="px-3 py-3 text-red-500">' +
+          fmt(aP - aPd) +
+          '</td><td class="px-3 py-3 ' +
+          (aPr >= 0 ? "profit-pos" : "profit-neg") +
+          '">' +
+          fmt(aPr) +
+          '</td><td colspan="2"></td></tr></tfoot></table></div></div>';
+        return h;
+      }
+
+      /* ===== USER MANAGEMENT ===== */
+      function rUsers() {
+        if (!currentUser || (currentUser.role !== "supremeadmin" && currentUser.role !== "superadmin")) {
+          return '<p class="text-red-500 font-bold">Access denied.</p>';
+        }
+
+        var displayUsers = users;
+        var btnText = currentUser.role === "supremeadmin" ? "Create User" : "Create Admin";
+        var isSupreme = currentUser.role === "supremeadmin";
+
+        var h =
+          '<div class="flex items-center justify-between mb-6"><p class="text-sm text-pri-600/60">' +
+          displayUsers.length +
+          ' users</p><button onclick="openUForm()" class="bg-pri-500 hover:bg-pri-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2"><i class="fas fa-plus text-xs"></i>' + btnText + '</button></div>';
+        
+        h +=
+          '<div class="bg-white rounded-xl border border-cream-300 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="bg-cream-50 text-left"><th class="px-4 py-3 font-semibold text-pri-600/60 uppercase text-xs">Name</th><th class="px-4 py-3 font-semibold text-pri-600/60 uppercase text-xs">Username</th><th class="px-4 py-3 font-semibold text-pri-600/60 uppercase text-xs">Role</th>' +
+          (isSupreme ? '<th class="px-4 py-3 font-semibold text-pri-600/60 uppercase text-xs">Assigned Superadmin</th>' : '') +
+          '<th class="px-4 py-3 font-semibold text-pri-600/60 uppercase text-xs">Status</th><th class="px-4 py-3 font-semibold text-pri-600/60 uppercase text-xs">Created</th><th class="px-4 py-3 font-semibold text-pri-600/60 uppercase text-xs">Actions</th></tr></thead><tbody>';
+        
+        displayUsers.forEach(function (u) {
+          var roleStr = "Admin";
+          if (u.role === "supremeadmin") roleStr = "Supreme Admin";
+          else if (u.role === "superadmin") roleStr = "Super Admin";
+          
+          var badgeClass = "badge-admin";
+          if (u.role === "supremeadmin" || u.role === "superadmin") badgeClass = "badge-superadmin";
+
+          var statusStr = u.active ? "Active" : "Inactive";
+          var statusClass = u.active ? "badge-active" : "badge-cancelled";
+
+          var canManage = false;
+          if (currentUser.role === "supremeadmin") {
+            canManage = true;
+          } else if (currentUser.role === "superadmin") {
+            canManage = (u.parentUser === currentUser.username && u.role === "admin") || (u.username === currentUser.username);
+          }
+
+          h +=
+            '<tr class="table-row border-b border-cream-100"><td class="px-4 py-3 font-medium text-pri-800">' +
+            u.name +
+            '</td><td class="px-4 py-3 text-pri-600">' +
+            u.username +
+            '</td><td class="px-4 py-3"><span class="badge ' +
+            badgeClass +
+            '">' +
+            roleStr +
+            '</span></td>';
+            
+          if (isSupreme) {
+            h += '<td class="px-4 py-3 text-pri-600/70">' + (u.parentUser || 'â€”') + '</td>';
+          }
+
+          h += '<td class="px-4 py-3"><span class="badge ' +
+            statusClass +
+            '">' +
+            statusStr +
+            '</span></td><td class="px-4 py-3 text-pri-600/70">' +
+            fD(u.createdAt) +
+            '</td><td class="px-4 py-3 flex gap-2">';
+          
+          if (canManage) {
+            h +=
+              '<button onclick="openUForm(' +
+              u.id +
+              ')" class="text-pri-400 hover:text-pri-600 mr-2" title="Edit"><i class="fas fa-edit"></i></button>';
+            if (u.username !== currentUser.username) {
+              h +=
+                '<button onclick="toggleU(' +
+                u.id +
+                ')" class="' +
+                (u.active
+                  ? "text-red-400 hover:text-red-600"
+                  : "text-green-400 hover:text-green-600") +
+                ' mr-2" title="' +
+                (u.active ? "Deactivate" : "Activate") +
+                '"><i class="fas ' +
+                (u.active ? "fa-user-slash" : "fa-user-check") +
+                '"></i></button>';
+            }
+            h +=
+              '<button onclick="resetPwd(' +
+              u.id +
+              ')" class="text-amber-400 hover:text-amber-600" title="Reset Password"><i class="fas fa-key"></i></button>';
+          } else {
+            h += '<span class="text-pri-300">â€”</span>';
+          }
+          h += "</td></tr>";
+        });
+        h += "</tbody></table></div></div>";
+        return h;
+      }
+
+      function openUForm(id) {
+        var u = id
+          ? rawUsers.find(function (x) {
+              return x.id === id;
+            })
+          : null;
+          
+        var isSupreme = currentUser.role === "supremeadmin";
+        
+        var roleSelectHTML = "";
+        if (isSupreme) {
+          roleSelectHTML = 
+            '<div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Role</label>' +
+            '<select name="role" id="userRoleSelect" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm" onchange="toggleParentSelect(this.value)">' +
+            '<option value="superadmin"' + (u && u.role === 'superadmin' ? ' selected' : '') + '>Super Admin</option>' +
+            '<option value="admin"' + (u && u.role === 'admin' ? ' selected' : '') + '>Admin</option>' +
+            '<option value="supremeadmin"' + (u && u.role === 'supremeadmin' ? ' selected' : '') + '>Supreme Admin</option>' +
+            '</select></div>';
+        } else {
+          roleSelectHTML = '<input type="hidden" name="role" value="' + (u ? u.role : "admin") + '">';
+        }
+
+        var activeSuperadmins = rawUsers.filter(function(sa) {
+          return sa.role === "superadmin" && sa.active;
+        });
+
+        var parentSelectHTML = "";
+        if (isSupreme) {
+          parentSelectHTML = 
+            '<div id="parentUserContainer" class="' + (u && u.role === 'admin' ? '' : 'hidden') + '">' +
+            '<label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Assign to Superadmin</label>' +
+            '<select name="parentUser" id="parentUserSelect" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm">' +
+            '<option value="">Select Superadmin...</option>' +
+            activeSuperadmins.map(function(sa) {
+              return '<option value="' + sa.username + '"' + (u && u.parentUser === sa.username ? ' selected' : '') + '>' + sa.name + ' (' + sa.username + ')</option>';
+            }).join('') +
+            '</select></div>';
+        } else {
+          parentSelectHTML = '<input type="hidden" name="parentUser" value="' + (u ? (u.parentUser || '') : currentUser.username) + '">';
+        }
+
+        openM(
+          '<div class="w-full max-w-md p-6"><div class="flex items-center justify-between mb-6"><h3 class="font-display font-bold text-pri-800 text-xl">' +
+            (u ? "Edit User" : "Create User") +
+            '</h3><button onclick="closeM()" class="text-pri-400 hover:text-pri-600"><i class="fas fa-times"></i></button></div><form id="uForm" class="space-y-4"><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Full Name</label><input type="text" name="name" value="' +
+            (u ? u.name : "") +
+            '" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Username</label><input type="text" name="username" value="' +
+            (u ? u.username : "") +
+            '" ' +
+            (u ? "readonly" : "required") +
+            ' class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm ' +
+            (u ? "bg-cream-100" : "") +
+            '"></div>' +
+            roleSelectHTML +
+            parentSelectHTML +
+            '<div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">' +
+            (u ? "New Password (blank to keep)" : "Password") +
+            '</label><input type="password" name="password" ' +
+            (u ? "" : "required") +
+            ' class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div><input type="hidden" name="id" value="' +
+            (u ? u.id : "") +
+            '"><div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-pri-500 hover:bg-pri-600 text-white py-2.5 rounded-lg text-sm font-semibold">' +
+            (u ? "Update" : "Create") +
+            '</button><button type="button" onclick="closeM()" class="px-5 py-2.5 border border-cream-300 rounded-lg text-sm text-pri-600">Cancel</button></div></form></div>',
+        );
+
+        window.toggleParentSelect = function(role) {
+          var container = document.getElementById("parentUserContainer");
+          if (!container) return;
+          var select = document.getElementById("parentUserSelect");
+          if (role === "admin") {
+            container.classList.remove("hidden");
+            if (select) select.required = true;
+          } else {
+            container.classList.add("hidden");
+            if (select) {
+              select.required = false;
+              select.value = "";
+            }
+          }
+        };
+
+        if (isSupreme && u && u.role === 'admin') {
+          var select = document.getElementById("parentUserSelect");
+          if (select) select.required = true;
+        }
+
+        document
+          .getElementById("uForm")
+          .addEventListener("submit", async function (e) {
+            e.preventDefault();
+            var fd = new FormData(e.target);
+            var d = Object.fromEntries(fd);
+            
+            if (!d.role) d.role = "admin";
+            if (!d.parentUser && d.role === "admin" && currentUser.role === "superadmin") {
+              d.parentUser = currentUser.username;
+            }
+            if (d.role !== "admin") {
+              d.parentUser = null;
+            }
+
+            try {
+              if (d.id) {
+                d.id = parseInt(d.id);
+                if (supabaseClient) {
+                  var updatePayload = { 
+                    name: d.name,
+                    role: d.role,
+                    parent_user: d.parentUser
+                  };
+                  if (d.password) updatePayload.password = d.password;
+                  
+                  const { error } = await supabaseClient.from("users").update(camelToSnake(updatePayload)).eq("id", d.id);
+                  if (error) throw error;
+                  await addLog("edit_admin", "Edited user " + d.name);
+                  toast("User updated");
+                } else {
+                  var idx = rawUsers.findIndex(function(x) { return x.id === d.id; });
+                  if (idx !== -1) {
+                    rawUsers[idx].name = d.name;
+                    rawUsers[idx].role = d.role;
+                    rawUsers[idx].parentUser = d.parentUser;
+                    if (d.password) rawUsers[idx].password = d.password;
+                    await addLog("edit_admin", "Edited user " + d.name);
+                    toast("User updated (Offline)");
+                  }
+                }
+              } else {
+                if (
+                  rawUsers.find(function (x) {
+                    return x.username.toLowerCase() === d.username.toLowerCase();
+                  })
+                ) {
+                  toast("Username exists", "error");
+                  return;
+                }
+                
+                if (supabaseClient) {
+                  var newUser = {
+                    username: d.username,
+                    password: d.password,
+                    role: d.role,
+                    name: d.name,
+                    active: true,
+                    parent_user: d.parentUser,
+                    created_at: todayStr()
+                  };
+                  const { error } = await supabaseClient.from("users").insert(camelToSnake(newUser));
+                  if (error) throw error;
+                  await addLog("create_admin", "Created user " + d.name);
+                  toast("User created");
+                } else {
+                  var newUser = {
+                    id: nextId.user++,
+                    username: d.username,
+                    password: d.password,
+                    role: d.role,
+                    name: d.name,
+                    active: true,
+                    parentUser: d.parentUser,
+                    createdAt: todayStr()
+                  };
+                  rawUsers.push(newUser);
+                  await addLog("create_admin", "Created user " + d.name);
+                  toast("User created (Offline)");
+                }
+              }
+              closeM();
+              if (supabaseClient) {
+                await loadDataFromSupabase();
+              } else {
+                applyDataVisibilityFilter();
+              }
+              render();
+            } catch (err) {
+              console.error(err);
+              toast("Failed to save user", "error");
+            }
+          });
+      }
+      async function toggleU(id) {
+        var u = rawUsers.find(function (x) {
+          return x.id === id;
+        });
+        if (!u) return;
+        
+        var canManage = false;
+        if (currentUser.role === "supremeadmin") {
+          canManage = (u.username !== currentUser.username);
+        } else if (currentUser.role === "superadmin") {
+          canManage = (u.parentUser === currentUser.username && u.role === "admin");
+        }
+        
+        if (!canManage) {
+          toast("Access denied", "error");
+          return;
+        }
+
+        try {
+          var newActive = !u.active;
+          if (supabaseClient) {
+            const { error } = await supabaseClient.from("users").update({ active: newActive }).eq("id", id);
+            if (error) throw error;
+            await loadDataFromSupabase();
+          } else {
+            u.active = newActive;
+            applyDataVisibilityFilter();
+          }
+          await addLog(
+            newActive ? "activate_admin" : "deactivate_admin",
+            (newActive ? "Activated" : "Deactivated") + " user " + u.name,
+          );
+          toast("User status updated");
+          render();
+        } catch (err) {
+          console.error(err);
+          toast("Failed to toggle status", "error");
+        }
+      }
+      function resetPwd(id) {
+        openM(
+          '<div class="w-full max-w-sm p-6 text-center"><div class="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4"><i class="fas fa-key text-amber-500 text-xl"></i></div><h3 class="font-display font-bold text-pri-800 text-lg mb-2">Reset Password</h3><input type="password" id="newPwd" placeholder="New password" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm mb-4"><div class="flex gap-3"><button onclick="doResetPwd(' +
+            id +
+            ')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg text-sm font-semibold">Reset</button><button onclick="closeM()" class="flex-1 border border-cream-300 py-2.5 rounded-lg text-sm text-pri-600">Cancel</button></div></div>',
+        );
+      }
+      async function doResetPwd(id) {
+        var p = document.getElementById("newPwd").value;
+        if (!p) {
+          toast("Enter a password", "error");
+          return;
+        }
+        var u = rawUsers.find(function (x) {
+          return x.id === id;
+        });
+        if (u) {
+          var canManage = false;
+          if (currentUser.role === "supremeadmin") {
+            canManage = true;
+          } else if (currentUser.role === "superadmin") {
+            canManage = (u.parentUser === currentUser.username && u.role === "admin") || (u.username === currentUser.username);
+          }
+          
+          if (!canManage) {
+            toast("Access denied", "error");
+            return;
+          }
+
+          try {
+            if (supabaseClient) {
+              const { error } = await supabaseClient.from("users").update({ password: p }).eq("id", id);
+              if (error) throw error;
+              await loadDataFromSupabase();
+            } else {
+              u.password = p;
+            }
+            await addLog("reset_password", "Reset password for " + u.name);
+            toast("Password reset");
+            closeM();
+            render();
+          } catch (err) {
+            console.error(err);
+            toast("Failed to reset password", "error");
+          }
+        }
+      }
+
+      /* ===== RECYCLE BIN ===== */
+      function rRecycle() {
+        if (!canDel()) return '<p class="text-red-500">Access denied.</p>';
+        var h =
+          '<div class="flex items-center justify-between mb-6"><p class="text-sm text-pri-600/60">' +
+          recycleBin.length +
+          " deleted records</p>";
+        if (recycleBin.length)
+          h +=
+            '<button onclick="emptyBin()" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2"><i class="fas fa-fire text-xs"></i>Empty Bin</button>';
+        h += "</div>";
+        if (!recycleBin.length) {
+          h +=
+            '<div class="bg-white rounded-xl border border-cream-300 p-12 text-center"><i class="fas fa-trash text-cream-300 text-4xl mb-3"></i><p class="text-pri-600/50">Recycle bin is empty</p></div>';
+          return h;
+        }
+        h += '<div class="space-y-3">';
+        recycleBin.forEach(function (item, i) {
+          var ic =
+            item.type === "client"
+              ? "fa-user"
+              : item.data.bookingType === "flight"
+                ? "fa-plane"
+                : item.data.bookingType === "hotel"
+                  ? "fa-hotel"
+                  : item.data.bookingType === "guide"
+                    ? "fa-train"
+                    : item.data.bookingType === "transport"
+                      ? "fa-bus"
+                      : item.data.bookingType === "visa"
+                        ? "fa-ship"
+                        : item.data.bookingType === "insurance"
+                          ? "fa-user-tie"
+                          : "fa-circle";
+          h +=
+            '<div class="bg-white rounded-xl border border-cream-300 p-4 flex items-center justify-between"><div class="flex items-center gap-4"><div class="w-10 h-10 rounded-lg bg-cream-100 flex items-center justify-center"><i class="fas ' +
+            ic +
+            ' text-pri-400"></i></div><div><p class="font-semibold text-pri-800 text-sm">' +
+            (item.data.name || item.data.bookingName) +
+            '</p><p class="text-xs text-pri-600/50">' +
+            item.type +
+            " &middot; Deleted by " +
+            item.deletedBy +
+            " on " +
+            item.deletedAt +
+            '</p></div></div><div class="flex gap-2"><button onclick="restoreIt(' +
+            i +
+            ')" class="bg-green-50 hover:bg-green-100 text-green-600 px-3 py-1.5 rounded-lg text-xs font-semibold"><i class="fas fa-undo mr-1"></i>Restore</button><button onclick="permDel(' +
+            i +
+            ')" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold"><i class="fas fa-fire mr-1"></i>Delete Forever</button></div></div>';
+        });
+        h += "</div>";
+        return h;
+      }
+      async function restoreIt(i) {
+        var item = recycleBin[i];
+        try {
+          var dbPayload = camelToSnake(item.data);
+          if (item.type === "client") {
+            const { error: insError } = await supabaseClient.from("clients").insert(dbPayload);
+            if (insError) throw insError;
+          } else {
+            const { error: insError } = await supabaseClient.from("bookings").insert(dbPayload);
+            if (insError) throw insError;
+          }
+          const { error: delError } = await supabaseClient.from("recycle_bin").delete().eq("id", item.id);
+          if (delError) throw delError;
+          await addLog(
+            "restore",
+            "Restored " +
+              item.type +
+              ": " +
+              (item.data.name || item.data.bookingName),
+          );
+          toast("Record restored");
+          await loadDataFromSupabase();
+          render();
+        } catch (err) {
+          console.error(err);
+          toast("Failed to restore record", "error");
+        }
+      }
+      function permDel(i) {
+        var item = recycleBin[i];
+        openM(
+          '<div class="w-full max-w-sm p-6 text-center"><div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4"><i class="fas fa-fire text-red-500 text-xl"></i></div><h3 class="font-display font-bold text-pri-800 text-lg mb-2">Permanently Delete?</h3><p class="text-sm text-pri-600/60 mb-6">This cannot be undone.</p><div class="flex gap-3"><button onclick="doPermDel(' +
+            item.id +
+            ')" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg text-sm font-semibold">Delete Forever</button><button onclick="closeM()" class="flex-1 border border-cream-300 py-2.5 rounded-lg text-sm text-pri-600">Cancel</button></div></div>',
+        );
+      }
+      async function doPermDel(id) {
+        try {
+          const { error } = await supabaseClient.from("recycle_bin").delete().eq("id", id);
+          if (error) throw error;
+          await addLog('permanent_delete', 'Permanently deleted record');
+          closeM();
+          await loadDataFromSupabase();
+          render();
+          toast('Permanently deleted', 'info');
+        } catch (err) {
+          console.error(err);
+          toast("Failed to permanently delete", "error");
+        }
+      }
+      function emptyBin() {
+        openM(
+          '<div class="w-full max-w-sm p-6 text-center"><h3 class="font-display font-bold text-pri-800 text-lg mb-2">Empty Recycle Bin?</h3><p class="text-sm text-pri-600/60 mb-6">' +
+            recycleBin.length +
+            ' records permanently deleted.</p><div class="flex gap-3"><button onclick="doEmptyBin()" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg text-sm font-semibold">Empty</button><button onclick="closeM()" class="flex-1 border border-cream-300 py-2.5 rounded-lg text-sm text-pri-600">Cancel</button></div></div>',
+        );
+      }
+      async function doEmptyBin() {
+        try {
+          const { error } = await supabaseClient.from("recycle_bin").delete().neq("id", 0);
+          if (error) throw error;
+          await addLog('empty_bin', 'Emptied recycle bin');
+          closeM();
+          await loadDataFromSupabase();
+          render();
+          toast('Bin emptied', 'info');
+        } catch (err) {
+          console.error(err);
+          toast("Failed to empty recycle bin", "error");
+        }
+      }
+      function rActivity() {
+        if (!canDel()) return '<p class="text-red-500">Access denied.</p>';
+        var sorted = activityLog.slice().reverse();
+        var ac = {
+          login: "text-green-600",
+          logout: "text-pri-600",
+          create_admin: "text-blue-600",
+          edit_admin: "text-amber-600",
+          deactivate_admin: "text-red-600",
+          activate_admin: "text-green-600",
+          reset_password: "text-amber-600",
+          create_client: "text-blue-600",
+          edit_client: "text-amber-600",
+          delete_client: "text-red-600",
+          create_booking: "text-blue-600",
+          edit_booking: "text-amber-600",
+          cancel_booking: "text-red-600",
+          change_booking: "text-amber-600",
+          delete_booking: "text-red-600",
+          restore: "text-green-600",
+          permanent_delete: "text-red-600",
+          empty_bin: "text-red-600",
+          system_init: "text-pri-600",
+          mark_done: "text-slate-600",
+          mark_booking_done: "text-slate-600",
+          reactivate_client: "text-blue-600",
+        };
+        var h =
+          '<div class="mb-6"><p class="text-sm text-pri-600/60">' +
+          activityLog.length +
+          " log entries</p></div>";
+        h +=
+          '<div class="bg-white rounded-xl border border-cream-300 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="bg-cream-50 text-left"><th class="px-4 py-2.5 font-semibold text-pri-600/60 uppercase">Time</th><th class="px-4 py-2.5 font-semibold text-pri-600/60 uppercase">User</th><th class="px-4 py-2.5 font-semibold text-pri-600/60 uppercase">Action</th><th class="px-4 py-2.5 font-semibold text-pri-600/60 uppercase">Details</th></tr></thead><tbody>';
+        sorted.forEach(function (l) {
+          h +=
+            '<tr class="table-row border-b border-cream-100"><td class="px-4 py-2.5 text-pri-600/70 font-mono">' +
+            l.timestamp +
+            '</td><td class="px-4 py-2.5 font-medium text-pri-800">' +
+            l.user +
+            '</td><td class="px-4 py-2.5 ' +
+            (ac[l.action] || "text-pri-600") +
+            ' font-semibold">' +
+            l.action.replace(/_/g, " ").toUpperCase() +
+            '</td><td class="px-4 py-2.5 text-pri-600/70">' +
+            l.details +
+            "</td></tr>";
+        });
+        h += "</tbody></table></div></div>";
+        return h;
+      }
+
+      /* ===== CLIENT FORM ===== */
+      function openCForm(id) {
+        var c = id ? gC(id) : null;
+        openM(
+          '<div class="w-full max-w-lg p-6"><div class="flex items-center justify-between mb-6"><h3 class="font-display font-bold text-pri-800 text-xl">' +
+            (c ? "Edit Client" : "Add Client") +
+            '</h3><button onclick="closeM()" class="text-pri-400 hover:text-pri-600"><i class="fas fa-times"></i></button></div><form id="cForm" class="space-y-4"><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Full Name</label><input type="text" name="name" value="' +
+            (c ? c.name : "") +
+            '" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Email</label><input type="email" name="email" value="' +
+            (c ? c.email : "") +
+            '" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Phone</label><input type="text" name="phone" value="' +
+            (c ? c.phone : "") +
+            '" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Nationality</label><input type="text" name="nationality" value="' +
+            (c ? c.nationality : "") +
+            '" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Passport No.</label><input type="text" name="passportNo" value="' +
+            (c ? c.passportNo : "") +
+            '" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div></div><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Address</label><input type="text" name="address" value="' +
+            (c ? c.address : "") +
+            '" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Notes</label><textarea name="notes" rows="3" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm resize-none">' +
+            (c ? c.notes : "") +
+            '</textarea></div><input type="hidden" name="id" value="' +
+            (c ? c.id : "") +
+            '"><div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-pri-500 hover:bg-pri-600 text-white py-2.5 rounded-lg text-sm font-semibold">' +
+            (c ? "Update" : "Add Client") +
+            '</button><button type="button" onclick="closeM()" class="px-5 py-2.5 border border-cream-300 rounded-lg text-sm text-pri-600">Cancel</button></div></form></div>',
+        );
+        document.getElementById("cForm").addEventListener("submit", saveC);
+      }
+      async function saveC(e) {
+        e.preventDefault();
+        var fd = new FormData(e.target);
+        var d = Object.fromEntries(fd);
+        if (d.id) {
+          d.id = parseInt(d.id);
+          var dbPayload = camelToSnake(d);
+          try {
+            const { error } = await supabaseClient.from("clients").update(dbPayload).eq("id", d.id);
+            if (error) throw error;
+            await addLog("edit_client", "Edited client " + d.name);
+            toast("Client updated");
+          } catch (err) {
+            console.error(err);
+            toast("Failed to update client", "error");
+            return;
+          }
+        } else {
+          delete d.id;
+          d.createdAt = todayStr();
+          d.status = "active";
+          d.createdBy = currentUser.username;
+          d.ownerUser = currentUser.role === "admin" ? currentUser.parentUser : currentUser.username;
+          var dbPayload = camelToSnake(d);
+          try {
+            const { error } = await supabaseClient.from("clients").insert(dbPayload);
+            if (error) throw error;
+            await addLog("create_client", "Created client " + d.name);
+            toast("Client added");
+          } catch (err) {
+            console.error(err);
+            toast("Failed to add client", "error");
+            return;
+          }
+        }
+        closeM();
+        await loadDataFromSupabase();
+        render();
+      }
+      function delC(id) {
+        if (!canDel()) {
+          toast("Only Super Admin can delete", "error");
+          return;
+        }
+        var c = gC(id);
+        if (!c) return;
+        openM(
+          '<div class="w-full max-w-sm p-6 text-center"><div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4"><i class="fas fa-trash text-red-500 text-xl"></i></div><h3 class="font-display font-bold text-pri-800 text-lg mb-2">Delete ' +
+            c.name +
+            '?</h3><p class="text-sm text-pri-600/60 mb-6">Moves to Recycle Bin with all bookings.</p><div class="flex gap-3"><button onclick="doDelC(' +
+            id +
+            ')" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg text-sm font-semibold">Delete</button><button onclick="closeM()" class="flex-1 border border-cream-300 py-2.5 rounded-lg text-sm text-pri-600">Cancel</button></div></div>',
+        );
+      }
+      async function doDelC(id) {
+        var c = gC(id);
+        if (!c) return;
+        var cb = travelBookings.filter(function (b) {
+          return b.clientId === id;
+        });
+        try {
+          var binItems = [];
+          binItems.push({
+            type: "client",
+            data: c,
+            deleted_by: currentUser.username,
+            deleted_at: nowTS()
+          });
+          cb.forEach(function (b) {
+            binItems.push({
+              type: "booking",
+              data: b,
+              deleted_by: currentUser.username,
+              deleted_at: nowTS()
+            });
+          });
+          const { error: binError } = await supabaseClient.from("recycle_bin").insert(camelToSnake(binItems));
+          if (binError) throw binError;
+          const { error: delError } = await supabaseClient.from("clients").delete().eq("id", id);
+          if (delError) throw delError;
+          await addLog(
+            "delete_client",
+            "Deleted client " + c.name + " with " + cb.length + " bookings"
+          );
+          closeM();
+          state.currentView = "clients";
+          await loadDataFromSupabase();
+          render();
+          toast("Client moved to Recycle Bin", "info");
+        } catch (err) {
+          console.error(err);
+          toast("Failed to delete client", "error");
+        }
+      }
+
+      /* ===== BOOKING FORM ===== */
+      function paymentRow(b, side, idx, totalField, legacyAmount, legacyDate) {
+        var prefix = side === "customer" ? "customerPayment" : "supplierPayment";
+        var accent = side === "customer" ? "pri" : "indigo";
+        var amount = b && b[prefix + idx + "Amount"] ? b[prefix + idx + "Amount"] : idx === 1 ? legacyAmount || "" : "";
+        var percent = b && b[prefix + idx + "Percent"] ? b[prefix + idx + "Percent"] : "";
+        var date = b && b[prefix + idx + "Date"] ? b[prefix + idx + "Date"] : idx === 1 ? legacyDate || "" : "";
+        var completed = b && b[prefix + idx + "Completed"] ? " checked" : "";
+        var completedHandler = side === "supplier" ? " onchange=\"autoUpdateSupplierDueDate()\"" : "";
+        if (!percent && amount && totalField) percent = ((parseFloat(amount) / parseFloat(totalField)) * 100).toFixed(2);
+        return (
+          '<div class="grid grid-cols-4 gap-3 mb-3"><div><label class="block text-xs font-semibold text-' +
+          accent +
+          '-700 uppercase mb-1">' +
+          idx +
+          '. Date</label><input type="date" name="' +
+          prefix +
+          idx +
+          'Date" value="' +
+          toInp(date) +
+          '" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"' +
+          (side === "supplier" ? ' onchange="autoUpdateSupplierDueDate()"' : "") +
+          '></div><div><label class="block text-xs font-semibold text-' +
+          accent +
+          '-700 uppercase mb-1">' +
+          (side === "customer" ? "Collected" : "Paid") +
+          ' %</label><input type="number" name="' +
+          prefix +
+          idx +
+          'Percent" step="0.01" min="0" max="100" value="' +
+          percent +
+          '" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm" oninput="autoCalc(\'' +
+          side +
+          "'," +
+          idx +
+          ',\'percent\')"></div><div><label class="block text-xs font-semibold text-' +
+          accent +
+          '-700 uppercase mb-1">Amount (\u20B9)</label><input type="number" name="' +
+          prefix +
+          idx +
+          'Amount" step="1" min="0" value="' +
+          amount +
+          '" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm" oninput="autoCalc(\'' +
+          side +
+          "'," +
+          idx +
+          ',\'amount\')"></div><label class="flex items-center gap-2 text-xs font-semibold text-' +
+          accent +
+          '-700 uppercase pt-7"><input type="checkbox" name="' +
+          prefix +
+          idx +
+          'Completed" value="1"' +
+          completed +
+          completedHandler +
+          ' class="h-4 w-4 rounded border-cream-300"> Completed</label></div>'
+        );
+      }
+      function openBForm(id, prefType, prefCid) {
+        var b = id
+          ? travelBookings.find(function (x) {
+              return x.id == id;
+            })
+          : null;
+        var btype = b ? b.bookingType : prefType || "flight";
+        var selCid = b ? b.clientId : prefCid || state.selectedClientId || "";
+        var bLabels = {
+          flight: "Flight Name",
+          hotel: "Hotel Name",
+          guide: "Train Name",
+          transport: "Bus/Taxi Name",
+          visa: "Boat Name",
+          insurance: "Service Type",
+        };
+        var oLabels = {
+          flight: "Airline / Operator",
+          hotel: "Contact Person Name",
+          guide: "Railway Operator",
+          transport: "Contact Person Name",
+          visa: "Contact Person Name",
+          insurance: "Guide Name",
+        };
+        var prefix =
+          btype === "flight"
+            ? "FL"
+            : btype === "hotel"
+              ? "HT"
+              : btype === "guide"
+                ? "TR"
+                : btype === "transport"
+                  ? "BT"
+                  : btype === "visa"
+                    ? "BO"
+                    : btype === "insurance"
+                      ? "GD"
+                      : "GD";
+        var html =
+          '<div class="w-full max-w-2xl p-6"><div class="flex items-center justify-between mb-6"><h3 class="font-display font-bold text-pri-800 text-xl">' +
+          (b ? "Edit Booking" : "New Booking") +
+          '</h3><button onclick="closeM()" class="text-pri-400 hover:text-pri-600"><i class="fas fa-times"></i></button></div><form id="bForm" class="space-y-4"><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Client</label><select name="clientId" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"><option value="">Select client...</option>' +
+          clients
+            .map(function (c) {
+              return (
+                '<option value="' +
+                c.id +
+                '"' +
+                (c.id == selCid ? " selected" : "") +
+                ">" +
+                c.name +
+                "</option>"
+              );
+            })
+            .join("") +
+          "</select></div><div><label class=\"block text-xs font-semibold text-pri-600/70 uppercase mb-1\">Booking Type</label><select name=\"bookingType\" id=\"bookingTypeSelect\" required class=\"w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm\" onchange=\"updateBFormType(this.value)\"><option value=\"flight\"" +
+          (btype === "flight" ? " selected" : "") +
+          '>Flight</option><option value="hotel"' +
+          (btype === "hotel" ? " selected" : "") +
+          '>Hotel</option><option value="guide"' +
+          (btype === "guide" ? " selected" : "") +
+          '>Train</option><option value="transport"' +
+          (btype === "transport" ? " selected" : "") +
+          '>Bus/Taxi</option><option value="visa"' +
+          (btype === "visa" ? " selected" : "") +
+          '>Boat</option><option value="insurance"' +
+          (btype === "insurance" ? " selected" : "") +
+          '>Guide</option></select></div></div><div class="grid grid-cols-2 gap-4"><div id="bnContainer"><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1" id="bnLabel">' +
+          bLabels[btype] +
+          '</label>' +
+          (btype === 'insurance' ? '<select name="bookingName" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"><option value="Full Day Guide"' + (b && b.bookingName === 'Full Day Guide' ? ' selected' : '') + '>Full Day Guide</option><option value="Half Day Guide"' + (b && b.bookingName === 'Half Day Guide' ? ' selected' : '') + '>Half Day Guide</option></select>' : '<input type="text" name="bookingName" value="' + (b ? b.bookingName : "") + '" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm">') +
+          '</div><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1" id="owLabel">' +
+          oLabels[btype] +
+          '</label><input type="text" name="hotelOrVehicleOwner" value="' +
+          (b ? b.hotelOrVehicleOwner || "" : "") +
+          '" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div></div><div id="flightFields" class="' + (btype === 'flight' ? 'grid' : 'hidden') + ' grid-cols-2 gap-4"><div class="mb-4"><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Travel From</label><input type="text" name="travelFrom" value="' + (b ? b.travelFrom || "" : "") + '" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div><div class="mb-4"><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Travel To</label><input type="text" name="travelTo" value="' + (b ? b.travelTo || "" : "") + '" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Phone Number</label><input type="text" name="phoneNumber" value="' +
+          (b ? b.phoneNumber || "" : "") +
+          '" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Ref. no.</label><input type="text" name="pnrRef" value="' +
+          (b
+            ? b.pnrRef
+            : "VCR-" + prefix + "-" + String(nextId.booking).padStart(3, "0")) +
+          '" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Booked on</label><input type="date" name="bookingDate" value="' +
+          toInp(b ? b.bookingDate : "") +
+          '" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div><div></div></div><div class="border border-pri-200 rounded-lg p-4 bg-pri-50/30"><p class="text-xs font-semibold text-pri-700 uppercase mb-3"><i class="fas fa-calendar-alt mr-1"></i>Reserved for</p><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">From Date</label><input type="date" name="travelDate" value="' +
+          toInp(b ? b.travelDate : "") +
+          '" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">To Date</label><input type="date" name="travelDateTo" value="' +
+          toInp(b ? b.travelDateTo : "") +
+          '" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"></div></div></div>';
+        html +=
+          '<div class="border-t border-cream-200 pt-4"><h4 class="font-semibold text-pri-800 text-sm mb-3">Collection Details</h4><div class="border border-pri-200 rounded-lg p-4 bg-pri-50/30 mb-4"><label class="block text-xs font-semibold text-pri-700 uppercase mb-1">Total amount to Receive Rs.</label><input type="number" name="customerRate" step="1" min="0" value="' +
+          (b && (b.customerRate || b.amountCollected) ? (b.customerRate || b.amountCollected) : "") +
+          '" required class="w-full border border-pri-300 rounded-lg px-3 py-2.5 text-sm mb-4" oninput="autoCalc()">' +
+          paymentRow(b, "customer", 1, b && (b.customerRate || b.amountCollected), b && b.amountPaidByCustomer, b && b.customerPaidDate) +
+          paymentRow(b, "customer", 2, b && (b.customerRate || b.amountCollected), b && b.customerBalancePaid, b && b.customerBalancePaidDate) +
+          paymentRow(b, "customer", 3, b && (b.customerRate || b.amountCollected), "", "") +
+          '<div><label class="block text-xs font-semibold text-pri-700 uppercase mb-1">Balance Amount required</label><input type="number" name="customerBalanceAmount" step="1" readonly class="w-full border border-cream-200 bg-cream-50 rounded-lg px-3 py-2.5 text-sm text-pri-600 font-semibold" value="0"></div></div>';
+        html +=
+          '<h4 class="font-semibold text-indigo-800 text-sm mb-3">Payment Details</h4>';
+        html +=
+          '<div class="border border-indigo-200 rounded-lg p-4 bg-indigo-50/40 mb-4"><label class="block text-xs font-semibold text-indigo-700 uppercase mb-1"><i class="fas fa-building mr-1 text-indigo-400"></i>Total amount to pay Rs.</label><input type="number" name="supplierRate" step="1" min="0" value="' +
+          (b && (b.supplierRate || b.totalAmountPayable) ? (b.supplierRate || b.totalAmountPayable) : "") +
+          '" required class="w-full border border-indigo-300 bg-indigo-50/60 text-indigo-900 rounded-lg px-3 py-2.5 text-sm input-indigo mb-4" oninput="autoCalc()">' +
+          paymentRow(b, "supplier", 1, b && (b.supplierRate || b.totalAmountPayable), b && (b.amountPaidToSupplier || b.amountPaid), b && b.supplierPaymentDate) +
+          paymentRow(b, "supplier", 2, b && (b.supplierRate || b.totalAmountPayable), "", "") +
+          paymentRow(b, "supplier", 3, b && (b.supplierRate || b.totalAmountPayable), "", "") +
+          '<div><label class="block text-xs font-semibold text-indigo-700 uppercase mb-1"><i class="fas fa-balance-scale mr-1 text-indigo-400"></i>Balance Amount required</label><input type="number" name="supplierBalanceAmount" step="1" readonly class="w-full border border-indigo-200 bg-indigo-100/70 text-indigo-800 rounded-lg px-3 py-2.5 text-sm font-semibold" value="0"></div></div>';
+        html +=
+          '<div class="grid grid-cols-2 gap-4 mb-4 bg-red-50 -mx-1 px-1 py-3 rounded-lg border border-red-200"><div><label class="block text-xs font-semibold text-red-700 uppercase mb-1"><i class="fas fa-exclamation-circle mr-1 text-red-400"></i>Supplier Payment Due Date</label><input type="date" name="supplierPaymentDueDate" value="' +
+          (b ? toInp(b.supplierPaymentDueDate || b.paymentDueDate) : "") +
+          '" class="w-full border-2 border-red-400 bg-red-50 text-red-900 rounded-lg px-3 py-2.5 text-sm font-semibold input-red transition-all" oninput="checkDueBlink()"></div><div><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Profit (\u20B9)</label><input type="number" name="profitDisplay" step="1" readonly class="w-full border border-cream-200 bg-green-50 rounded-lg px-3 py-2.5 text-sm font-semibold" value="0"></div></div>';
+        html +=
+          '</div><div class="mt-4"><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Remarks</label><textarea name="remarks" rows="2" class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm resize-none">' +
+          (b ? b.remarks || "" : "") +
+          '</textarea></div><input type="hidden" name="id" value="' +
+          (b ? b.id : "") +
+          '"><div class="flex gap-3 pt-2"><button type="submit" class="flex-1 bg-acc-400 hover:bg-acc-500 text-white py-2.5 rounded-lg text-sm font-semibold">' +
+          (b ? "Update" : "Create") +
+          ' Booking</button><button type="button" onclick="closeM()" class="px-5 py-2.5 border border-cream-300 rounded-lg text-sm text-pri-600">Cancel</button></div></form></div>';
+        openM(html);
+        window.updateBFormType = function(val) {
+          var bl = {
+            flight: 'Flight Name',
+            hotel: 'Hotel Name',
+            guide: 'Train Name',
+            transport: 'Bus/Taxi Name',
+            visa: 'Boat Name',
+            insurance: 'Service Type'
+          };
+          var ol = {
+            flight: 'Airline / Operator',
+            hotel: 'Contact Person Name',
+            guide: 'Railway Operator',
+            transport: 'Contact Person Name',
+            visa: 'Contact Person Name',
+            insurance: 'Guide Name'
+          };
+          document.getElementById('bnLabel').textContent = bl[val] || 'Booking Name';
+          document.getElementById('owLabel').textContent = ol[val] || 'Operator';
+          var bnc = document.getElementById('bnContainer');
+          if (val === 'insurance') {
+            bnc.innerHTML = '<label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1" id="bnLabel">' + bl[val] + '</label><select name="bookingName" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm"><option value="Full Day Guide">Full Day Guide</option><option value="Half Day Guide">Half Day Guide</option></select>';
+          } else {
+            bnc.innerHTML = '<label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1" id="bnLabel">' + (bl[val] || 'Booking Name') + '</label><input type="text" name="bookingName" required class="w-full border border-cream-300 rounded-lg px-3 py-2.5 text-sm">';
+          }
+          document.getElementById('flightFields').className = val === 'flight' ? 'grid grid-cols-2 gap-4' : 'hidden';
+        };
+        window.autoCalc = function (side, idx, source) {
+          var f = document.getElementById("bForm");
+          if (!f) return;
+          var cr = parseFloat(f.customerRate.value) || 0;
+          var sr = parseFloat(f.supplierRate.value) || 0;
+          function updateRow(rowSide, rowIdx, total) {
+            var prefix = rowSide === "customer" ? "customerPayment" : "supplierPayment";
+            var pct = f[prefix + rowIdx + "Percent"];
+            var amt = f[prefix + rowIdx + "Amount"];
+            if (!pct || !amt) return 0;
+            if (side === rowSide && idx === rowIdx && source === "percent") {
+              amt.value = total && pct.value ? Math.round((total * (parseFloat(pct.value) || 0)) / 100) : "";
+            } else if (side === rowSide && idx === rowIdx && source === "amount") {
+              pct.value = total && amt.value ? (((parseFloat(amt.value) || 0) / total) * 100).toFixed(2) : "";
+            }
+            return parseFloat(amt.value) || 0;
+          }
+          var customerPaid = 0;
+          var supplierPaid = 0;
+          [1, 2, 3].forEach(function (n) {
+            customerPaid += updateRow("customer", n, cr);
+            supplierPaid += updateRow("supplier", n, sr);
+          });
+          f.customerBalanceAmount.value = Math.max(0, cr - customerPaid);
+          f.supplierBalanceAmount.value = Math.max(0, sr - supplierPaid);
+          var p = cr - sr;
+          f.profitDisplay.value = p;
+          f.profitDisplay.className =
+            "w-full border border-cream-200 bg-green-50 rounded-lg px-3 py-2.5 text-sm font-semibold " +
+            (p >= 0 ? "profit-pos" : "profit-neg");
+        };
+        window.autoUpdateSupplierDueDate = function () {
+          var f = document.getElementById("bForm");
+          if (!f || !f.supplierPaymentDueDate) return;
+          if (f.supplierPayment1Completed && f.supplierPayment1Completed.checked) {
+            f.supplierPaymentDueDate.value = f.supplierPayment2Date && f.supplierPayment2Date.value ? f.supplierPayment2Date.value : "";
+          }
+          if (f.supplierPayment2Completed && f.supplierPayment2Completed.checked) {
+            f.supplierPaymentDueDate.value = f.supplierPayment3Date && f.supplierPayment3Date.value ? f.supplierPayment3Date.value : "";
+          }
+          if (f.supplierPayment3Completed && f.supplierPayment3Completed.checked) {
+            f.supplierPaymentDueDate.value = "";
+          }
+          checkDueBlink();
+        };
+        window.checkDueBlink = function () {
+          var f = document.getElementById("bForm");
+          if (!f) return;
+          var dStr = f.supplierPaymentDueDate.value;
+          if (!dStr) {
+            f.supplierPaymentDueDate.classList.remove("due-alert");
+            return;
+          }
+          var d = new Date(dStr);
+          var now = new Date();
+          now.setHours(0, 0, 0, 0);
+          var diff = (d - now) / (1000 * 60 * 60 * 24);
+          if (diff <= 2 && diff >= 0)
+            f.supplierPaymentDueDate.classList.add("due-alert");
+          else f.supplierPaymentDueDate.classList.remove("due-alert");
+        };
+        autoCalc();
+        checkDueBlink();
+        document.getElementById("bForm").addEventListener("submit", saveB);
+      }
+      async function saveB(e) {
+        e.preventDefault();
+        var fd = new FormData(e.target);
+        var d = Object.fromEntries(fd);
+        d.clientId = parseInt(d.clientId);
+        d.customerRate = parseFloat(d.customerRate) || 0;
+        d.supplierRate = parseFloat(d.supplierRate) || 0;
+        var customerPaidTotal = 0;
+        var supplierPaidTotal = 0;
+        [1, 2, 3].forEach(function (n) {
+          d["customerPayment" + n + "Amount"] = parseFloat(d["customerPayment" + n + "Amount"]) || 0;
+          d["customerPayment" + n + "Percent"] = parseFloat(d["customerPayment" + n + "Percent"]) || 0;
+          d["supplierPayment" + n + "Amount"] = parseFloat(d["supplierPayment" + n + "Amount"]) || 0;
+          d["supplierPayment" + n + "Percent"] = parseFloat(d["supplierPayment" + n + "Percent"]) || 0;
+          d["customerPayment" + n + "Completed"] = d["customerPayment" + n + "Completed"] === "1";
+          d["supplierPayment" + n + "Completed"] = d["supplierPayment" + n + "Completed"] === "1";
+          customerPaidTotal += d["customerPayment" + n + "Amount"];
+          supplierPaidTotal += d["supplierPayment" + n + "Amount"];
+        });
+        d.amountPaidByCustomer = customerPaidTotal;
+        d.customerBalancePaid = d.customerPayment2Amount + d.customerPayment3Amount;
+        d.amountPaidToSupplier = supplierPaidTotal;
+        d.totalAmountPayable = d.supplierRate;
+        d.amountPaid = d.amountPaidToSupplier;
+        d.amountCollected = d.customerRate;
+        if (d.supplierPayment3Completed) {
+          d.supplierPaymentDueDate = "";
+        } else if (d.supplierPayment2Completed) {
+          d.supplierPaymentDueDate = d.supplierPayment3Date || "";
+        } else if (d.supplierPayment1Completed) {
+          d.supplierPaymentDueDate = d.supplierPayment2Date || "";
+        }
+        [
+          "bookingDate",
+          "travelDate",
+          "travelDateTo",
+          "supplierPaymentDueDate",
+          "customerPayment1Date",
+          "customerPayment2Date",
+          "customerPayment3Date",
+          "supplierPayment1Date",
+          "supplierPayment2Date",
+          "supplierPayment3Date",
+        ].forEach(function (k) {
+          if (d[k]) d[k] = fromInp(d[k]);
+        });
+        d.customerPaidDate = d.customerPayment1Date;
+        d.customerBalancePaidDate = d.customerPayment2Date;
+        d.supplierPaymentDate = d.supplierPayment1Date;
+        d.paymentDueDate = d.supplierPaymentDueDate;
+        delete d.customerBalanceAmount;
+        delete d.supplierBalanceAmount;
+        delete d.profitDisplay;
+        if (d.bookingType !== 'flight') {
+          delete d.travelFrom;
+          delete d.travelTo;
+        }
+        try {
+          if (d.id) {
+            d.id = parseInt(d.id);
+            d.modifiedBy = currentUser.username;
+            d.modifiedAt = nowTS();
+            var dbPayload = camelToSnake(d);
+            const { error } = await supabaseClient.from("bookings").update(dbPayload).eq("id", d.id);
+            if (error) throw error;
+            await addLog("edit_booking", "Edited booking " + d.pnrRef);
+            toast("Booking updated");
+          } else {
+            delete d.id;
+            d.status = "active";
+            d.cancelChangeRemarks = "";
+            d.createdBy = currentUser.username;
+            d.ownerUser = currentUser.role === "admin" ? currentUser.parentUser : currentUser.username;
+            d.createdAt = todayStr();
+            d.modifiedBy = "";
+            d.modifiedAt = "";
+            var dbPayload = camelToSnake(d);
+            const { error } = await supabaseClient.from("bookings").insert(dbPayload);
+            if (error) throw error;
+            await addLog("create_booking", "Created booking " + d.pnrRef);
+            toast("Booking created");
+          }
+          closeM();
+          await loadDataFromSupabase();
+          render();
+        } catch (err) {
+          console.error(err);
+          toast("Failed to save booking", "error");
+        }
+      }
+
+      /* ===== CANCEL / CHANGE ===== */
+      function cancelBk(id) {
+        var b = travelBookings.find(function (x) {
+          return x.id == id;
+        });
+        if (!b) return;
+        var cl = gC(b.clientId);
+        openM(
+          '<div class="w-full max-w-md p-6"><div class="flex items-center justify-between mb-4"><h3 class="font-display font-bold text-red-700 text-xl"><i class="fas fa-ban mr-2"></i>Cancel Booking</h3><button onclick="closeM()" class="text-pri-400 hover:text-pri-600"><i class="fas fa-times"></i></button></div><div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4"><p class="text-sm font-semibold text-red-800">' +
+            b.bookingName +
+            '</p><p class="text-xs text-red-600">' +
+            b.pnrRef +
+            " | " +
+            (cl ? cl.name : "?") +
+            " | " +
+            fTravel(b) +
+            '</p></div><div class="mb-4"><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Reason for Cancellation (required)</label><textarea id="cancelRm" rows="3" required class="w-full border border-red-300 rounded-lg px-3 py-2.5 text-sm resize-none focus:border-red-500" placeholder="Enter cancellation reason..."></textarea></div><div class="flex gap-3"><button onclick="doCancel(' +
+            id +
+            ')" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg text-sm font-semibold">Confirm Cancellation</button><button onclick="closeM()" class="flex-1 border border-cream-300 py-2.5 rounded-lg text-sm text-pri-600">Cancel</button></div></div>',
+        );
+      }
+      async function doCancel(id) {
+        var rm = document.getElementById("cancelRm").value.trim();
+        if (!rm) {
+          toast("Cancellation reason is required", "error");
+          return;
+        }
+        var b = travelBookings.find(function (x) {
+          return x.id == id;
+        });
+        if (!b) return;
+        try {
+          const { error } = await supabaseClient.from("bookings").update({
+            status: "cancelled",
+            cancel_change_remarks: rm,
+            modified_by: currentUser.username,
+            modified_at: nowTS()
+          }).eq("id", id);
+          if (error) throw error;
+          await addLog("cancel_booking", "Cancelled booking " + b.pnrRef + ": " + rm);
+          toast("Booking cancelled");
+          closeM();
+          await loadDataFromSupabase();
+          render();
+        } catch (err) {
+          console.error(err);
+          toast("Failed to cancel booking", "error");
+        }
+      }
+      function changeBk(id) {
+        var b = travelBookings.find(function (x) {
+          return x.id == id;
+        });
+        if (!b) return;
+        var cl = gC(b.clientId);
+        openM(
+          '<div class="w-full max-w-md p-6"><div class="flex items-center justify-between mb-4"><h3 class="font-display font-bold text-amber-700 text-xl"><i class="fas fa-exchange-alt mr-2"></i>Change Booking</h3><button onclick="closeM()" class="text-pri-400 hover:text-pri-600"><i class="fas fa-times"></i></button></div><div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4"><p class="text-sm font-semibold text-amber-800">' +
+            b.bookingName +
+            '</p><p class="text-xs text-amber-600">' +
+            b.pnrRef +
+            " | " +
+            (cl ? cl.name : "?") +
+            " | " +
+            fTravel(b) +
+            '</p></div><div class="mb-4"><label class="block text-xs font-semibold text-pri-600/70 uppercase mb-1">Reason for Change (required)</label><textarea id="changeRm" rows="3" required class="w-full border border-amber-300 rounded-lg px-3 py-2.5 text-sm resize-none focus:border-amber-500" placeholder="Describe what changed..."></textarea></div><div class="flex gap-3"><button onclick="doChange(' +
+            id +
+            ')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg text-sm font-semibold">Confirm Change</button><button onclick="closeM()" class="flex-1 border border-cream-300 py-2.5 rounded-lg text-sm text-pri-600">Cancel</button></div></div>',
+        );
+      }
+      async function doChange(id) {
+        var rm = document.getElementById("changeRm").value.trim();
+        if (!rm) {
+          toast("Change reason is required", "error");
+          return;
+        }
+        var b = travelBookings.find(function (x) {
+          return x.id == id;
+        });
+        if (!b) return;
+        try {
+          const { error } = await supabaseClient.from("bookings").update({
+            status: "changed",
+            cancel_change_remarks: rm,
+            modified_by: currentUser.username,
+            modified_at: nowTS()
+          }).eq("id", id);
+          if (error) throw error;
+          await addLog("change_booking", "Changed booking " + b.pnrRef + ": " + rm);
+          toast("Booking marked as changed");
+          closeM();
+          await loadDataFromSupabase();
+          render();
+        } catch (err) {
+          console.error(err);
+          toast("Failed to change booking", "error");
+        }
+      }
+      function delBk(id) {
+        if (!canDel()) {
+          toast("Only Super Admin can delete", "error");
+          return;
+        }
+        var b = travelBookings.find(function (x) {
+          return x.id == id;
+        });
+        if (!b) return;
+        openM(
+          '<div class="w-full max-w-sm p-6 text-center"><div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4"><i class="fas fa-trash text-red-500 text-xl"></i></div><h3 class="font-display font-bold text-pri-800 text-lg mb-2">Delete Booking?</h3><p class="text-sm text-pri-600/60 mb-2">' +
+            b.bookingName +
+            " (" +
+            b.pnrRef +
+            ')</p><p class="text-xs text-pri-600/50 mb-6">Moves to Recycle Bin.</p><div class="flex gap-3"><button onclick="doDelBk(' +
+            id +
+            ')" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg text-sm font-semibold">Delete</button><button onclick="closeM()" class="flex-1 border border-cream-300 py-2.5 rounded-lg text-sm text-pri-600">Cancel</button></div></div>',
+        );
+      }
+      async function doDelBk(id) {
+        var b = travelBookings.find(function (x) {
+          return x.id == id;
+        });
+        if (!b) return;
+        try {
+          const { error: binError } = await supabaseClient.from("recycle_bin").insert({
+            type: "booking",
+            data: b,
+            deleted_by: currentUser.username,
+            deleted_at: nowTS()
+          });
+          if (binError) throw binError;
+          const { error: delError } = await supabaseClient.from("bookings").delete().eq("id", id);
+          if (delError) throw delError;
+          await addLog("delete_booking", "Deleted booking " + b.pnrRef);
+          closeM();
+          await loadDataFromSupabase();
+          render();
+          toast("Booking moved to Recycle Bin", "info");
+        } catch (err) {
+          console.error(err);
+          toast("Failed to delete booking", "error");
+        }
+      }
+      /* ===== BACKUP & RESTORE ===== */
+      function rBackup() {
+        if (!currentUser || currentUser.role !== "supremeadmin") return '<p class="text-red-500">Access denied.</p>';
+        var h = '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">';
+        h +=
+          '<div class="bg-white rounded-xl border border-cream-300 p-6"><div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center mb-4"><i class="fas fa-download text-green-600 text-xl"></i></div><h3 class="font-display font-bold text-pri-800 text-lg mb-2">Export Data</h3><p class="text-sm text-pri-600/70 mb-6">Download a complete backup of all your clients, bookings, and system logs.</p><button onclick="exportData()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 w-full justify-center"><i class="fas fa-file-export"></i> Download JSON File</button></div>';
+        h +=
+          '<div class="bg-white rounded-xl border border-cream-300 p-6"><div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4"><i class="fas fa-upload text-blue-600 text-xl"></i></div><h3 class="font-display font-bold text-pri-800 text-lg mb-2">Import Data</h3><p class="text-sm text-pri-600/70 mb-6">Restore a previously saved backup file. This will replace your current data.</p><input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)"><button onclick="document.getElementById(\'importFile\').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 w-full justify-center"><i class="fas fa-file-import"></i> Upload JSON File</button></div>';
+        h +=
+          '<div class="bg-white rounded-xl border border-red-200 p-6 md:col-span-2"><div class="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center mb-4"><i class="fas fa-exclamation-triangle text-red-600 text-xl"></i></div><h3 class="font-display font-bold text-pri-800 text-lg mb-2">Reset System</h3><p class="text-sm text-pri-600/70 mb-6">Clear all current data and restore the default demo dataset. This action cannot be undone unless you have a backup.</p><button onclick="resetData()" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 w-max"><i class="fas fa-trash-alt"></i> Reset to Default Data</button></div></div>';
+        return h;
+      }
+      function exportData() {
+        var data = {
+          nextId: nextId,
+          users: users,
+          clients: clients,
+          travelBookings: travelBookings,
+          recycleBin: recycleBin,
+          activityLog: activityLog,
+        };
+        var dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(data));
+        var anchor = document.createElement("a");
+        anchor.href = dataStr;
+        anchor.download = "TravelCRM_Backup_" + todayStr() + ".json";
+        anchor.click();
+        toast("Data exported successfully");
+      }
+      async function importData(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = async function (event) {
+          try {
+            var data = JSON.parse(event.target.result);
+            if (data.users && data.clients && data.travelBookings) {
+              toast("Restoring database from file, please wait...", "info");
+              await supabaseClient.from("bookings").delete().neq("id", 0);
+              await supabaseClient.from("clients").delete().neq("id", 0);
+              await supabaseClient.from("users").delete().neq("id", 0);
+              await supabaseClient.from("recycle_bin").delete().neq("id", 0);
+              await supabaseClient.from("activity_log").delete().neq("id", 0);
+              if (data.users.length) {
+                await supabaseClient.from("users").insert(camelToSnake(data.users));
+              }
+              if (data.clients.length) {
+                await supabaseClient.from("clients").insert(camelToSnake(data.clients));
+              }
+              if (data.travelBookings.length) {
+                await supabaseClient.from("bookings").insert(camelToSnake(data.travelBookings));
+              }
+              if (data.recycleBin && data.recycleBin.length) {
+                await supabaseClient.from("recycle_bin").insert(camelToSnake(data.recycleBin));
+              }
+              if (data.activityLog && data.activityLog.length) {
+                await supabaseClient.from("activity_log").insert(camelToSnake(data.activityLog));
+              }
+              await addLog("import_data", "Imported data from backup file");
+              toast("Data imported successfully");
+              await loadDataFromSupabase();
+              render();
+            } else {
+              toast("Invalid backup file format", "error");
+            }
+          } catch (err) {
+            console.error(err);
+            toast("Error restoring data: " + err.message, "error");
+          }
+          e.target.value = "";
+        };
+        reader.readAsText(file);
+      }
+      function resetData() {
+        openM(
+          '<div class="w-full max-w-sm p-6 text-center"><div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4"><i class="fas fa-exclamation-triangle text-red-500 text-xl"></i></div><h3 class="font-display font-bold text-pri-800 text-lg mb-2">Reset System?</h3><p class="text-sm text-pri-600/60 mb-6">This will delete your database credentials and reload. You will need to reconnect to a database.</p><div class="flex gap-3"><button onclick="doResetData()" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg text-sm font-semibold">Yes, Disconnect</button><button onclick="closeM()" class="flex-1 border border-cream-300 py-2.5 rounded-lg text-sm text-pri-600">Cancel</button></div></div>',
+        );
+      }
+      async function doResetData() {
+        localStorage.removeItem("supabase_url");
+        localStorage.removeItem("supabase_key");
+        location.reload();
+      }
+      function saveData() {
+        // No-op. Data is saved in real-time to Supabase.
+      }
+
+      // Supabase database setup UI handler
+      document.getElementById("dbSetupForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        var url = document.getElementById("dbUrlInput").value.trim();
+        var key = document.getElementById("dbKeyInput").value.trim();
+        var errDiv = document.getElementById("dbSetupError");
+        errDiv.classList.add("hidden");
+        try {
+          var client = window.supabase.createClient(url, key);
+          var { error } = await client.from("users").select("id").limit(1);
+          if (error) throw error;
+          localStorage.setItem("supabase_url", url);
+          localStorage.setItem("supabase_key", key);
+          dbUrl = url;
+          dbKey = key;
+          supabaseClient = client;
+          await loadDataFromSupabase();
+          document.getElementById("dbSetupScreen").classList.add("hidden");
+          document.getElementById("loginScreen").classList.remove("hidden");
+          toast("Database connected successfully!");
+        } catch (err) {
+          console.error(err);
+          errDiv.classList.remove("hidden");
+          errDiv.textContent = "Connection failed: " + (err.message || "Please check URL, Anon Key, or database table configuration.");
+        }
+      });
+
+      function showDbSetup() {
+        document.getElementById("loginScreen").classList.add("hidden");
+        document.getElementById("dbSetupScreen").classList.remove("hidden");
+      }
+
+      function hideDbSetup() {
+        document.getElementById("dbSetupScreen").classList.add("hidden");
+        document.getElementById("loginScreen").classList.remove("hidden");
+        var errDiv = document.getElementById("dbSetupError");
+        if (errDiv) errDiv.classList.add("hidden");
+      }
+
+      async function initApp() {
+        document.getElementById("dbSetupScreen").classList.add("hidden");
+        document.getElementById("loginScreen").classList.remove("hidden");
+        
+        var hasConfig = initSupabase();
+        if (hasConfig) {
+          await loadDataFromSupabase();
+        }
+      }
+
+      // Initialize the application
+      initApp();
+    </script>
+  </body>
+</html>
